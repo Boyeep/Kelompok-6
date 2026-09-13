@@ -1,0 +1,126 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  background: #f2f4f7;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1f2937;
+}
+
+.app {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.task-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.task-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.task-form button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #4f46e5;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.task-form button:hover {
+  background: #4338ca;
+}
+
+/*
+  TODO (Fitur #3 - Filter Task):
+  Tambahkan style untuk .filters dan .filter-btn di sini.
+  Tandai tombol filter yang sedang aktif, misalnya dengan class ".active".
+*/
+
+.task-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.task-item span {
+  flex: 1;
+  word-break: break-word;
+}
+
+.task-item .delete-btn {
+  border: none;
+  background: transparent;
+  color: #ef4444;
+  font-size: 1.1rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-item .delete-btn:hover {
+  color: #b91c1c;
+}
+
+.empty-state {
+  text-align: center;
+  color: #9ca3af;
+  padding: 16px 0;
+  font-size: 0.9rem;
+}
+
+/*
+  TODO (Fitur #1 - Tandai Selesai):
+  Tambahkan style untuk task yang sudah selesai, misalnya class ".completed"
+  pada .task-item yang membuat teksnya dicoret (text-decoration: line-through)
+  dan warnanya lebih pudar.
+*/
+
+/*
+  TODO (Fitur #2 - Edit Task):
+  Tambahkan style untuk mode edit, misalnya input text yang muncul
+  menggantikan <span> saat task sedang diedit.
+*/
+
+/*
+  TODO (Fitur #5 & #6 - Counter & Clear Completed):
+  Tambahkan style untuk .footer yang berisi counter task dan tombol
+  "Hapus yang Selesai".
+*/
