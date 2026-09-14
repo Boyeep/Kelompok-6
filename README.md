@@ -111,10 +111,10 @@ fitur secara mandiri.
 
 ---
 
-## 5. Timeline Pengerjaan (14–21 September 2026)
+## 5. Timeline Pengerjaan (14–20 September 2026)
 
-Total waktu pengerjaan: **1 minggu** (Senin, 14 September s.d. Senin, 21
-September 2026, dengan batas pengumpulan pada hari terakhir).
+Total waktu pengerjaan: **1 minggu** (Senin, 14 September s.d. Minggu, 20
+September 2026, dengan batas pengumpulan pukul **23.59** pada hari terakhir).
 
 | Hari | Tanggal | Fokus |
 |---|---|---|
@@ -124,8 +124,7 @@ September 2026, dengan batas pengumpulan pada hari terakhir).
 | Kamis | 17 Sept | Pengerjaan dan review Pull Request berlanjut. Diharapkan minimal 2–3 fitur sudah ter-merge ke `dev`. |
 | Jumat | 18 Sept | Fitur yang tersisa diselesaikan, Pull Request terakhir diajukan. |
 | Sabtu | 19 Sept | **Integrasi dan pengujian**: seluruh fitur diuji bersama pada branch `dev`, kemudian bug hasil integrasi diperbaiki. |
-| Minggu | 20 Sept | Penyempurnaan tampilan (polishing), pembaruan README apabila diperlukan, serta persiapan Pull Request `dev` → `main`. |
-| Senin | 21 Sept | **Batas akhir**: merge `dev` ke `main` pada fork kelompok, kemudian ajukan Pull Request dari fork ke repo starter ini sebagai bentuk pengumpulan tugas. |
+| Minggu | 20 Sept | **Batas akhir, pukul 23.59**: penyempurnaan tampilan (polishing), pembaruan README apabila diperlukan, merge `dev` ke `main` pada fork kelompok, kemudian ajukan Pull Request dari fork ke repo starter ini sebagai bentuk pengumpulan tugas. |
 
 Timeline dapat disesuaikan sepanjang ritmenya tetap terjaga: **hindari
 mengerjakan seluruh pekerjaan pada hari terakhir**. Progres harian (siapa
