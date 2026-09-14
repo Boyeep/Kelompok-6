@@ -113,13 +113,14 @@ fitur secara mandiri.
 
 ## 5. Timeline Pengerjaan (14–20 September 2026)
 
-Total waktu pengerjaan: **1 minggu** (Senin, 14 September s.d. Minggu, 20
-September 2026, dengan batas pengumpulan pukul **23.59** pada hari terakhir).
+Pengumuman final project disampaikan pada Senin, 14 September 2026.
+Pengerjaan efektif berlangsung **6 hari**, Selasa 15 September s.d. Minggu 20
+September 2026, dengan batas pengumpulan pukul **23.59** pada hari terakhir.
 
 | Hari | Tanggal | Fokus |
 |---|---|---|
-| Senin | 14 Sept | **Kickoff**: PM melakukan fork repo starter ini ke akun/organisasi kelompok, menyiapkan board, memecah backlog menjadi Issues, dan membuat branch `dev` pada fork tersebut. Seluruh anggota melakukan `git clone` dari fork kelompok dan memastikan starter dapat dijalankan. Pembagian fitur kepada masing-masing anggota dilakukan pada hari ini. |
-| Selasa | 15 Sept | Pengerjaan dimulai pada branch `feature/*` masing-masing. Fitur #4 (localStorage) sebaiknya dikerjakan **lebih dahulu** apabila memungkinkan, lihat catatan pada bagian 6. |
+| Senin | 14 Sept | **Pengumuman FP**: final project diumumkan ke seluruh kelas, pembagian 8 kelompok (masing-masing 5 orang), dan akses ke repo starter ini dibagikan. Belum ada pengerjaan kode pada hari ini. |
+| Selasa | 15 Sept | **Kickoff**: PM melakukan fork repo starter ini ke akun/organisasi kelompok, menyiapkan board, memecah backlog menjadi Issues, dan membuat branch `dev` pada fork tersebut. Seluruh anggota melakukan `git clone` dari fork kelompok, memastikan starter dapat dijalankan, dan mulai coding pada branch `feature/*` masing-masing hari itu juga. Fitur #4 (localStorage) sebaiknya dikerjakan **lebih dahulu** apabila memungkinkan, lihat catatan pada bagian 6. |
 | Rabu | 16 Sept | Pengerjaan berlanjut. Pull Request pertama mulai diajukan dan direview. |
 | Kamis | 17 Sept | Pengerjaan dan review Pull Request berlanjut. Diharapkan minimal 2–3 fitur sudah ter-merge ke `dev`. |
 | Jumat | 18 Sept | Fitur yang tersisa diselesaikan, Pull Request terakhir diajukan. |
