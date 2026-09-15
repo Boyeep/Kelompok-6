@@ -21,13 +21,35 @@ let nextId = 1;
 // null-nya sebelum dipakai.
 const savedTasks = localStorage.getItem("tasks");
 if (savedTasks !== null) {
-  tasks = JSON.parse(savedTasks);
-  
-  if (tasks.length > 0) {
-    nextId = Math.max(...tasks.map(t => t.id)) + 1;
+  try {
+    const parsedTasks = JSON.parse(savedTasks);
+    tasks = Array.isArray(parsedTasks)
+      ? parsedTasks
+          .filter(
+            (task) =>
+              task &&
+              typeof task === "object" &&
+              Number.isFinite(Number(task.id)) &&
+              typeof task.text === "string",
+          )
+          .map((task) => ({
+            id: Number(task.id),
+            text: task.text,
+            completed: Boolean(task.completed),
+          }))
+      : [];
+  } catch (error) {
+    console.warn("Data tasks di localStorage tidak valid dan akan direset.", error);
+    tasks = [];
   }
-} else {
-  tasks = []; 
+}
+
+const savedTaskIds = tasks
+  .map((task) => Number(task.id))
+  .filter((id) => Number.isFinite(id));
+
+if (savedTaskIds.length > 0) {
+  nextId = Math.max(...savedTaskIds) + 1;
 }
 
 function saveToLocalStorage() {
@@ -35,6 +57,7 @@ function saveToLocalStorage() {
 }
 
 function renderTasks() {
+  saveToLocalStorage();
   taskList.innerHTML = "";
 
   if (tasks.length === 0) {
