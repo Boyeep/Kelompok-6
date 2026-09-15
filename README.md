@@ -237,7 +237,8 @@ pekerjaan lebih cepat:
 
 ## 7. Alur Kerja Git yang Wajib Diikuti
 
-> **Tutorial referensi (wajib dibaca): [Tutorial GitHub Project](https://links.labse.id/go/Tutorial-GitHub-Project)**
+> [!IMPORTANT]
+> **Wajib ditonton sebelum mulai:** [Tutorial GitHub Project](https://links.labse.id/go/Tutorial-GitHub-Project)
 
 Bagian ini merupakan **komponen yang paling menentukan penilaian**. Struktur
 branch yang digunakan, di dalam fork masing-masing kelompok:
