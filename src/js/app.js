@@ -19,6 +19,20 @@ let nextId = 1;
 // (kalau ada) sebelum renderTasks() dipanggil pertama kali di bawah.
 // Hint: gunakan JSON.parse(localStorage.getItem("tasks")) dan cek
 // null-nya sebelum dipakai.
+const savedTasks = localStorage.getItem("tasks");
+if (savedTasks !== null) {
+  tasks = JSON.parse(savedTasks);
+  
+  if (tasks.length > 0) {
+    nextId = Math.max(...tasks.map(t => t.id)) + 1;
+  }
+} else {
+  tasks = []; 
+}
+
+function saveToLocalStorage() {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
 
 function renderTasks() {
   taskList.innerHTML = "";
