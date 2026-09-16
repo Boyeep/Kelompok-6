@@ -80,8 +80,17 @@ function renderTasks() {
     // Tambahkan <input type="checkbox"> di sini yang mencerminkan
     // task.completed, dan tambahkan class "completed" pada `li`
     // kalau task.completed === true.
+    if (task.completed) {
+      li.classList.add("completed");
+    }
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = task.completed;
+    checkbox.addEventListener("change", () => toggleComplete(task.id));
 
     const span = document.createElement("span");
+    span.className = "task-text";
     span.textContent = task.text;
 
     // TODO (Fitur #2 - Edit Task):
@@ -94,6 +103,7 @@ function renderTasks() {
     deleteBtn.textContent = "✕";
     deleteBtn.addEventListener("click", () => deleteTask(task.id));
 
+    li.appendChild(checkbox); // checkbox buat fitur 1
     li.appendChild(span);
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
@@ -130,6 +140,13 @@ function deleteTask(id) {
 // TODO (Fitur #1 - Tandai Selesai):
 // Buat function toggleComplete(id) yang membalik nilai task.completed
 // untuk task dengan id yang cocok, lalu panggil renderTasks().
+function toggleComplete(id) {
+  const task = tasks.find((t) => t.id === id);
+  if (task) {
+    task.completed = !task.completed;
+    renderTasks();
+  }
+}
 
 // TODO (Fitur #2 - Edit Task):
 // Buat function editTask(id, newText) yang mengubah task.text
