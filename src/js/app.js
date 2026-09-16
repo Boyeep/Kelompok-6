@@ -86,6 +86,7 @@ function renderTasks() {
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
+    checkbox.setAttribute("aria-label", `Tandai "${task.text}" sebagai selesai`);
     checkbox.checked = task.completed;
     checkbox.addEventListener("change", () => toggleComplete(task.id));
 
