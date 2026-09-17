@@ -20,37 +20,20 @@
       <button type="submit">Tambah</button>
     </form>
 
-    <!--
-      TODO (Fitur #3 - Filter Task):
-      Tambahkan 3 tombol filter di sini: "Semua", "Aktif", "Selesai".
-      Lihat README.md bagian "Fitur yang Harus Dibuat" nomor 3 untuk hint lengkap.
-
-      Contoh struktur:
-      <div class="filters" id="filters">
-        <button class="filter-btn active" data-filter="all">Semua</button>
-        <button class="filter-btn" data-filter="active">Aktif</button>
-        <button class="filter-btn" data-filter="completed">Selesai</button>
-      </div>
-    -->
+    <div class="filters" id="filters" role="group" aria-label="Filter task">
+      <button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">Semua</button>
+      <button type="button" class="filter-btn" data-filter="active" aria-pressed="false">Aktif</button>
+      <button type="button" class="filter-btn" data-filter="completed" aria-pressed="false">Selesai</button>
+    </div>
 
     <ul id="task-list" class="task-list">
       <!-- Task dirender otomatis oleh js/app.js, jangan ditulis manual di sini -->
     </ul>
 
-    <!--
-      TODO (Fitur #5 - Counter & Fitur #6 - Clear Completed):
-      Tambahkan info jumlah task tersisa dan tombol untuk menghapus
-      semua task yang sudah selesai. Lihat README.md nomor 5 dan 6.
-
-      Contoh struktur:
-      <div class="footer" id="footer">
-        <span id="task-counter">0 task tersisa</span>
-        <button id="clear-completed">Hapus yang Selesai</button>
-      </div>
-    -->
-      <div class="footer" id="footer">
-    <span id="task-counter">0 task tersisa</span>
-</div>
+    <div class="footer" id="footer">
+      <span id="task-counter">0 task tersisa</span>
+      <button type="button" id="clear-completed">Hapus yang Selesai</button>
+    </div>
   </main>
 
   <script src="js/app.js"></script>
