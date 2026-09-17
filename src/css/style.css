@@ -123,8 +123,35 @@ h1 {
   menggantikan <span> saat task sedang diedit.
 */
 
-/*
-  TODO (Fitur #5 & #6 - Counter & Clear Completed):
-  Tambahkan style untuk .footer yang berisi counter task dan tombol
-  "Hapus yang Selesai".
-*/
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+#clear-completed {
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #4b5563;
+  font: inherit;
+  cursor: pointer;
+}
+
+#clear-completed:hover {
+  background: #f2f4f7;
+}
+
+#clear-completed:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
