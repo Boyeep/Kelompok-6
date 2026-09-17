@@ -94,25 +94,6 @@ function renderTasks() {
     span.className = "task-text";
     span.textContent = task.text;
 
-    // TODO (Fitur #2 - Edit Task):
-    // Tambahkan tombol "Edit" di sini. Saat diklik, ganti `span`
-    // menjadi <input> berisi teks task supaya bisa diubah,
-    // lalu simpan perubahannya saat user menekan Enter / klik Save.
-    
-    function editTask(id, newText) {
-  const trimmed = newText.trim();
-  if (trimmed === "") {
-    renderTasks();
-    return;
-  }
-
-  const task = tasks.find((t) => t.id === id);
-  if (task) {
-    task.text = trimmed;
-    renderTasks();
-  }
-}
-
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
     editBtn.textContent = "Edit";
@@ -123,21 +104,38 @@ function renderTasks() {
       editInput.value = task.text;
 
       let isSaved = false;
+      let isTabbing = false;
       const saveEdit = () => {
-        if (isSaved) 
-        return;
-      isSaved = true;
-      editTask(task.id, editInput.value);
+        if (isSaved) return;
+        isSaved = true;
+        editTask(task.id, editInput.value);
+
+        // Perbarui teks saja agar blur tidak menghapus tombol yang sedang diklik.
+        span.textContent = task.text;
+        checkbox.setAttribute("aria-label", `Tandai "${task.text}" sebagai selesai`);
+        li.replaceChild(span, editInput);
       };
 
       editInput.addEventListener("keydown", (event) => {
         if (event.key === "Enter") {
-        saveEdit();
+          event.preventDefault();
+          saveEdit();
+        } else if (event.key === "Tab") {
+          isTabbing = true;
         }
       });
 
-      editInput.addEventListener("blur", saveEdit);
-      li.replaceChild(editInput,span);
+      editInput.addEventListener("blur", (event) => {
+        const nextControl = event.relatedTarget;
+        if (!isTabbing && nextControl && taskList.contains(nextControl)) {
+          editTask(task.id, editInput.value);
+          // Tunggu event klik agar perubahan tinggi baris tidak menggeser tombol tujuan.
+          document.addEventListener("click", saveEdit, { capture: true, once: true });
+        } else {
+          saveEdit();
+        }
+      });
+      li.replaceChild(editInput, span);
       editInput.focus();
       editInput.select();
     });
@@ -149,7 +147,7 @@ function renderTasks() {
 
     li.appendChild(checkbox); // checkbox buat fitur 1
     li.appendChild(span);
-    li.appendChild(editBtn)
+    li.appendChild(editBtn);
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
   });
@@ -194,9 +192,16 @@ function toggleComplete(id) {
   }
 }
 
-// TODO (Fitur #2 - Edit Task):
-// Buat function editTask(id, newText) yang mengubah task.text
-// untuk task dengan id yang cocok, lalu panggil renderTasks().
+function editTask(id, newText) {
+  const trimmed = newText.trim();
+  if (trimmed === "") return;
+
+  const task = tasks.find((task) => task.id === id);
+  if (task) {
+    task.text = trimmed;
+    saveToLocalStorage();
+  }
+}
 
 // TODO (Fitur #6 - Clear Completed):
 // Buat function clearCompleted() yang menghapus semua task dengan
