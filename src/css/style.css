@@ -123,6 +123,38 @@ h1 {
   menggantikan <span> saat task sedang diedit.
 */
 
+.task-item .edit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid #4338ca;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.edit-btn {
+  border: none;
+  background: transparent;
+  color: blue;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-item {
+  border: none;
+  background: transparent;
+  color: black;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-item .edit-btn:hover {
+  color: #e5e7eb;
+}
+
 /*
   TODO (Fitur #5 & #6 - Counter & Clear Completed):
   Tambahkan style untuk .footer yang berisi counter task dan tombol
