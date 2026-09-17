@@ -7,6 +7,7 @@
 const taskForm = document.getElementById("task-form");
 const taskInput = document.getElementById("task-input");
 const taskList = document.getElementById("task-list");
+const clearCompletedButton = document.getElementById("clear-completed");
 const filterButtons = document.querySelectorAll(".filter-btn");
 
 // Struktur satu task: { id, text, completed }
@@ -142,7 +143,7 @@ function renderTasks() {
 
       editInput.addEventListener("blur", (event) => {
         const nextControl = event.relatedTarget;
-        if (!isTabbing && nextControl && taskList.contains(nextControl)) {
+        if (!isTabbing && nextControl) {
           editTask(task.id, editInput.value);
           // Tunggu event klik agar perubahan tinggi baris tidak menggeser tombol tujuan.
           document.addEventListener("click", saveEdit, { capture: true, once: true });
@@ -218,10 +219,10 @@ function editTask(id, newText) {
   }
 }
 
-// TODO (Fitur #6 - Clear Completed):
-// Buat function clearCompleted() yang menghapus semua task dengan
-// completed === true dari array "tasks", lalu panggil renderTasks().
-// Jangan lupa tambahkan event listener untuk tombol #clear-completed.
+function clearCompleted() {
+  tasks = tasks.filter((task) => task.completed !== true);
+  renderTasks();
+}
 
 filterButtons.forEach((button) => {
   button.addEventListener("click", () => {
@@ -229,6 +230,8 @@ filterButtons.forEach((button) => {
     renderTasks();
   });
 });
+
+clearCompletedButton.addEventListener("click", clearCompleted);
 
 taskForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -238,4 +241,3 @@ taskForm.addEventListener("submit", (event) => {
 });
 
 renderTasks();
-
