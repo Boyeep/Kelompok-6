@@ -99,11 +99,26 @@ function renderTasks() {
     // menjadi <input> berisi teks task supaya bisa diubah,
     // lalu simpan perubahannya saat user menekan Enter / klik Save.
     
-    const editBn = document.createElement("button");
-    editBn.className = "edit-btn";
+    function editTask(id, newText) {
+  const trimmed = newText.trim();
+  if (trimmed === "") {
+    renderTasks();
+    return;
+  }
+
+  const task = tasks.find((t) => t.id === id);
+  if (task) {
+    task.text = trimmed;
+    renderTasks();
+  }
+}
+
+    const editBtn = document.createElement("button");
+    editBtn.className = "edit-btn";
     editBtn.textContent = "Edit";
-    editBn.addEventListener("click", () => {
+    editBtn.addEventListener("click", () => {
       const editInput = document.createElement("input");
+      editInput.type = "text";
       editInput.className = "edit-input";
       editInput.value = task.text;
 
@@ -134,6 +149,7 @@ function renderTasks() {
 
     li.appendChild(checkbox); // checkbox buat fitur 1
     li.appendChild(span);
+    li.appendChild(editBtn)
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
   });
@@ -146,6 +162,7 @@ function renderTasks() {
   // Setiap kali renderTasks() dipanggil, data "tasks" sudah berubah,
   // jadi ini tempat yang pas untuk menyimpan ulang ke localStorage.
   // Hint: localStorage.setItem("tasks", JSON.stringify(tasks));
+  saveToLocalStorage();
 }
 
 function addTask(text) {
@@ -200,3 +217,4 @@ taskForm.addEventListener("submit", (event) => {
 });
 
 renderTasks();
+
