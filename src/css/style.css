@@ -168,6 +168,11 @@ h1 {
   font-size: 0.9rem;
 }
 
+#task-counter {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
 #clear-completed {
   margin-left: auto;
   padding: 6px 10px;

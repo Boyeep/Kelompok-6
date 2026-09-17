@@ -59,9 +59,18 @@ function saveToLocalStorage() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
+function updateTaskCounter() {
+  const remaining = tasks.filter((task) => task.completed === false).length;
+  const taskCounter = document.getElementById("task-counter");
+  if (taskCounter) {
+    taskCounter.textContent = `${remaining} task tersisa`;
+  }
+}
+
 function renderTasks() {
   saveToLocalStorage();
   taskList.innerHTML = "";
+  updateTaskCounter();
 
   filterButtons.forEach((button) => {
     const isActive = button.dataset.filter === currentFilter;
@@ -168,10 +177,6 @@ function renderTasks() {
     taskList.appendChild(li);
   });
 
-  // TODO (Fitur #5 - Counter):
-  // Update elemen #task-counter di sini setiap kali renderTasks() dipanggil,
-  // isinya jumlah task yang belum selesai. Contoh: "3 task tersisa".
-
   // TODO (Fitur #4 - Simpan ke localStorage):
   // Setiap kali renderTasks() dipanggil, data "tasks" sudah berubah,
   // jadi ini tempat yang pas untuk menyimpan ulang ke localStorage.
@@ -216,6 +221,7 @@ function editTask(id, newText) {
   if (task) {
     task.text = trimmed;
     saveToLocalStorage();
+    updateTaskCounter();
   }
 }
 
