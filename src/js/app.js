@@ -59,15 +59,18 @@ function saveToLocalStorage() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-function renderTasks() {
-  saveToLocalStorage();
-  taskList.innerHTML = "";
-
-  const remaining = tasks.filter((task) => !task.completed).length;
+function updateTaskCounter() {
+  const remaining = tasks.filter((task) => task.completed === false).length;
   const taskCounter = document.getElementById("task-counter");
   if (taskCounter) {
     taskCounter.textContent = `${remaining} task tersisa`;
   }
+}
+
+function renderTasks() {
+  saveToLocalStorage();
+  taskList.innerHTML = "";
+  updateTaskCounter();
 
   filterButtons.forEach((button) => {
     const isActive = button.dataset.filter === currentFilter;
@@ -218,6 +221,7 @@ function editTask(id, newText) {
   if (task) {
     task.text = trimmed;
     saveToLocalStorage();
+    updateTaskCounter();
   }
 }
 
