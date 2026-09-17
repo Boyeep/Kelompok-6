@@ -7,6 +7,7 @@
 const taskForm = document.getElementById("task-form");
 const taskInput = document.getElementById("task-input");
 const taskList = document.getElementById("task-list");
+const taskCounter = document.getElementById("task-counter");
 
 // Struktur satu task: { id, text, completed }
 // NOTE: "completed" sudah disiapkan di data model, tapi belum
@@ -59,6 +60,8 @@ function saveToLocalStorage() {
 function renderTasks() {
   saveToLocalStorage();
   taskList.innerHTML = "";
+  const remainingTasks = tasks.filter((task) => task.completed === false).length;
+  taskCounter.textContent = `${remainingTasks} task tersisa`;
 
   if (tasks.length === 0) {
     const emptyState = document.createElement("li");
@@ -109,10 +112,6 @@ function renderTasks() {
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
   });
-
-  // TODO (Fitur #5 - Counter):
-  // Update elemen #task-counter di sini setiap kali renderTasks() dipanggil,
-  // isinya jumlah task yang belum selesai. Contoh: "3 task tersisa".
 
   // TODO (Fitur #4 - Simpan ke localStorage):
   // Setiap kali renderTasks() dipanggil, data "tasks" sudah berubah,
