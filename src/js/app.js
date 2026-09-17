@@ -98,6 +98,34 @@ function renderTasks() {
     // Tambahkan tombol "Edit" di sini. Saat diklik, ganti `span`
     // menjadi <input> berisi teks task supaya bisa diubah,
     // lalu simpan perubahannya saat user menekan Enter / klik Save.
+    
+    const editBn = document.createElement("button");
+    editBn.className = "edit-btn";
+    editBtn.textContent = "Edit";
+    editBn.addEventListener("click", () => {
+      const editInput = document.createElement("input");
+      editInput.className = "edit-input";
+      editInput.value = task.text;
+
+      let isSaved = false;
+      const saveEdit = () => {
+        if (isSaved) 
+        return;
+      isSaved = true;
+      editTask(task.id, editInput.value);
+      };
+
+      editInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+        saveEdit();
+        }
+      });
+
+      editInput.addEventListener("blur", saveEdit);
+      li.replaceChild(editInput,span);
+      editInput.focus();
+      editInput.select();
+    });
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
