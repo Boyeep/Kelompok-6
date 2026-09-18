@@ -186,18 +186,6 @@ li.addEventListener("dragend", () => {
     taskList.appendChild(li);
   });
   
-  taskList.addEventListener("dragover", (event) => {
-    event.preventDefault();
-
-    const dragging = document.querySelector(".dragging");
-    const afterElement = getDragAfterElement(taskList, event.clientY);
-
-    if (afterElement == null) {
-      taskList.appendChild(dragging);
-    } else {
-      taskList.insertBefore(dragging, afterElement);
-    }
-  });
 
 
   // TODO (Fitur #4 - Simpan ke localStorage):
@@ -232,6 +220,29 @@ function getDragAfterElement(container, y) {
     }
   ).element;
 }
+
+  taskList.addEventListener("dragover", (event) => {
+    event.preventDefault();
+
+    const dragging = document.querySelector(".dragging");
+    const afterElement = getDragAfterElement(taskList, event.clientY);
+
+    if (afterElement == null) {
+      taskList.appendChild(dragging);
+    } else {
+      taskList.insertBefore(dragging, afterElement);
+    }
+  });
+
+  taskList.addEventListener("dragend", () => {
+  const newOrder = [...taskList.querySelectorAll(".task-item")].map((li) =>
+    Number(li.dataset.id),
+  );
+
+  tasks.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+  saveToLocalStorage();
+});
+  
 
 function addTask(text) {
   const trimmed = text.trim();
