@@ -8,7 +8,12 @@
 </head>
 <body>
   <main class="app">
-    <h1>📋 My To Do List</h1>
+    <h1>
+      <span aria-hidden="true">📋</span> My To Do List
+    </h1>
+    <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Aktifkan mode gelap" title="Aktifkan mode gelap">
+      <span class="button-icon" aria-hidden="true">☾</span>
+    </button>
 
     <form id="task-form" class="task-form">
       <input
@@ -17,7 +22,9 @@
         placeholder="Mau ngapain hari ini?"
         autocomplete="off"
       />
-      <button type="submit">Tambah</button>
+      <button type="submit" aria-label="Tambah task" title="Tambah task">
+        <span class="button-icon" aria-hidden="true">+</span>
+      </button>
     </form>
 
     <div class="filters" id="filters" role="group" aria-label="Filter task">
