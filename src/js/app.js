@@ -16,6 +16,7 @@ const filterButtons = document.querySelectorAll(".filter-btn");
 let tasks = [];
 let nextId = 1;
 let currentFilter = "all";
+let draggedTaskId = null;
 
 // TODO (Fitur #4 - Simpan ke localStorage):
 // Saat aplikasi pertama kali dibuka, load "tasks" dari localStorage
@@ -102,13 +103,19 @@ function renderTasks() {
     li.dataset.id = task.id;
     li.draggable = true;
 
-    li.addEventListener("dragstart", () => {
-  li.classList.add("dragging");
-});
+    li.addEventListener("dragstart", (event) => {
+      draggedTaskId = task.id;
+      li.classList.add("dragging");
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", String(task.id));
+    });
 
-li.addEventListener("dragend", () => {
-  li.classList.remove("dragging");
-});
+    li.addEventListener("dragend", () => {
+      draggedTaskId = null;
+      li.classList.remove("dragging");
+      // The data order changes only on drop; rerender restores canceled drags.
+      renderTasks();
+    });
 
     // TODO (Fitur #1 - Tandai Selesai):
     // Tambahkan <input type="checkbox"> di sini yang mencerminkan
@@ -185,9 +192,6 @@ li.addEventListener("dragend", () => {
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
   });
-  
-
-
   // TODO (Fitur #4 - Simpan ke localStorage):
   // Setiap kali renderTasks() dipanggil, data "tasks" sudah berubah,
   // jadi ini tempat yang pas untuk menyimpan ulang ke localStorage.
@@ -221,28 +225,48 @@ function getDragAfterElement(container, y) {
   ).element;
 }
 
-  taskList.addEventListener("dragover", (event) => {
-    event.preventDefault();
+taskList.addEventListener("dragenter", (event) => {
+  if (draggedTaskId === null || !taskList.querySelector(".dragging")) return;
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+});
 
-    const dragging = document.querySelector(".dragging");
-    const afterElement = getDragAfterElement(taskList, event.clientY);
+taskList.addEventListener("dragover", (event) => {
+  const dragging = taskList.querySelector(".dragging");
+  if (draggedTaskId === null || !dragging) return;
 
-    if (afterElement == null) {
-      taskList.appendChild(dragging);
-    } else {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+  const afterElement = getDragAfterElement(taskList, event.clientY);
+
+  if (afterElement == null) {
+    if (dragging !== taskList.lastElementChild) taskList.appendChild(dragging);
+  } else {
+    if (dragging.nextElementSibling !== afterElement) {
       taskList.insertBefore(dragging, afterElement);
     }
-  });
+  }
+});
 
-  taskList.addEventListener("dragend", () => {
+taskList.addEventListener("drop", (event) => {
+  if (draggedTaskId === null || !taskList.querySelector(".dragging")) return;
+  event.preventDefault();
+
   const newOrder = [...taskList.querySelectorAll(".task-item")].map((li) =>
     Number(li.dataset.id),
   );
+  const visibleIds = new Set(newOrder);
+  const tasksById = new Map(tasks.map((task) => [task.id, task]));
+  let visibleIndex = 0;
 
-  tasks.sort((a, b) => newOrder.indexOf(a.id) - newOrder.indexOf(b.id));
+  // Reorder visible slots only, preserving every hidden task's position.
+  tasks = tasks.map((task) =>
+    visibleIds.has(task.id)
+      ? tasksById.get(newOrder[visibleIndex++])
+      : task,
+  );
   saveToLocalStorage();
 });
-  
 
 function addTask(text) {
   const trimmed = text.trim();
