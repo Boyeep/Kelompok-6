@@ -7,6 +7,7 @@
 const taskForm = document.getElementById("task-form");
 const taskInput = document.getElementById("task-input");
 const taskList = document.getElementById("task-list");
+const dueDateInput = document.getElementById("due-date-input"); // Bonus (1)
 
 // Struktur satu task: { id, text, completed }
 // NOTE: "completed" sudah disiapkan di data model, tapi belum
@@ -36,6 +37,7 @@ if (savedTasks !== null) {
             id: Number(task.id),
             text: task.text,
             completed: Boolean(task.completed),
+            dueDate: typeof task.dueDate === "string" ? task.dueDate : "", // Bonus (1)
           }))
       : [];
   } catch (error) {
@@ -94,24 +96,16 @@ function renderTasks() {
     span.className = "task-text";
     span.textContent = task.text;
 
+    const dueDateSpan = document.createElement("span"); // Bonus (1)
+    dueDateSpan.className = "task-due-date";
+    if (task.dueDate) {
+    dueDateSpan.textContent = "📅" + formatDueDate(task.dueDate);
+    }
+
     // TODO (Fitur #2 - Edit Task):
     // Tambahkan tombol "Edit" di sini. Saat diklik, ganti `span`
     // menjadi <input> berisi teks task supaya bisa diubah,
     // lalu simpan perubahannya saat user menekan Enter / klik Save.
-    
-    function editTask(id, newText) {
-  const trimmed = newText.trim();
-  if (trimmed === "") {
-    renderTasks();
-    return;
-  }
-
-  const task = tasks.find((t) => t.id === id);
-  if (task) {
-    task.text = trimmed;
-    renderTasks();
-  }
-}
 
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
@@ -149,6 +143,7 @@ function renderTasks() {
 
     li.appendChild(checkbox); // checkbox buat fitur 1
     li.appendChild(span);
+    li.appendChild(dueDateSpan); // Bonus (1)
     li.appendChild(editBtn)
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
@@ -165,7 +160,7 @@ function renderTasks() {
   saveToLocalStorage();
 }
 
-function addTask(text) {
+function addTask(text,dueDate) {
   const trimmed = text.trim();
   if (trimmed === "") return;
 
@@ -173,6 +168,7 @@ function addTask(text) {
     id: nextId++,
     text: trimmed,
     completed: false,
+    dueDate: dueDate || "",
   });
 
   renderTasks();
@@ -181,6 +177,12 @@ function addTask(text) {
 function deleteTask(id) {
   tasks = tasks.filter((task) => task.id !== id);
   renderTasks();
+}
+
+function formatDueDate(dateString) {
+  const parts = dateString.split("-");
+  if (parts.length !== 3) return dateString;
+  return parts[2] + "/" + parts[1] + "/" + parts[0];
 }
 
 // TODO (Fitur #1 - Tandai Selesai):
@@ -198,6 +200,20 @@ function toggleComplete(id) {
 // Buat function editTask(id, newText) yang mengubah task.text
 // untuk task dengan id yang cocok, lalu panggil renderTasks().
 
+ function editTask(id, newText) {
+    const trimmed = newText.trim();
+      if (trimmed === "") {
+        renderTasks();
+      return;
+    }
+
+    const task = tasks.find((t) => t.id === id);
+     if (task) {
+       task.text = trimmed;
+       renderTasks();
+    }
+}
+
 // TODO (Fitur #6 - Clear Completed):
 // Buat function clearCompleted() yang menghapus semua task dengan
 // completed === true dari array "tasks", lalu panggil renderTasks().
@@ -211,8 +227,9 @@ function toggleComplete(id) {
 
 taskForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  addTask(taskInput.value);
+  addTask(taskInput.value, dueDateInput.value);
   taskInput.value = "";
+  dueDateInput.value = "";
   taskInput.focus();
 });
 

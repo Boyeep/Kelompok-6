@@ -41,6 +41,7 @@ h1 {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 1rem;
+  min-width: 0;
 }
 
 .task-form button {
@@ -159,3 +160,8 @@ h1 {
   Tambahkan style untuk .footer yang berisi counter task dan tombol
   "Hapus yang Selesai".
 */
+
+.task-form input[type="date"] {
+  flex: none;
+  width: 150px;
+}
