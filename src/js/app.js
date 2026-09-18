@@ -127,6 +127,7 @@ function renderTasks() {
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
+    checkbox.className = "task-checkbox";
     checkbox.setAttribute("aria-label", `Tandai "${task.text}" sebagai selesai`);
     checkbox.checked = task.completed;
     checkbox.addEventListener("change", () => toggleComplete(task.id));
@@ -137,7 +138,9 @@ function renderTasks() {
 
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
-    editBtn.textContent = "Edit";
+    editBtn.innerHTML = '<span class="button-icon" aria-hidden="true">✎</span>';
+    editBtn.setAttribute("aria-label", "Edit task");
+    editBtn.title = "Edit task";
     editBtn.addEventListener("click", () => {
       const editInput = document.createElement("input");
       editInput.type = "text";
@@ -183,7 +186,9 @@ function renderTasks() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    deleteBtn.textContent = "✕";
+    deleteBtn.innerHTML = '<span class="button-icon" aria-hidden="true">×</span>';
+    deleteBtn.setAttribute("aria-label", "Hapus task");
+    deleteBtn.title = "Hapus task";
     deleteBtn.addEventListener("click", () => deleteTask(task.id));
 
     li.appendChild(checkbox); // checkbox buat fitur 1
@@ -328,6 +333,31 @@ taskForm.addEventListener("submit", (event) => {
   addTask(taskInput.value);
   taskInput.value = "";
   taskInput.focus();
+});
+
+// theme toggle
+const themeToggle = document.getElementById("theme-toggle");
+
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") {
+  document.body.classList.add("dark");
+}
+
+function updateThemeToggle() {
+  const isDarkMode = document.body.classList.contains("dark");
+  const label = isDarkMode ? "Aktifkan mode terang" : "Aktifkan mode gelap";
+  themeToggle.innerHTML = `<span class="button-icon" aria-hidden="true">${isDarkMode ? "☀" : "☾"}</span>`;
+  themeToggle.setAttribute("aria-label", label);
+  themeToggle.title = label;
+}
+
+updateThemeToggle();
+
+themeToggle.addEventListener("click", () => {
+  document.body.classList.toggle("dark");
+  const isDarkMode = document.body.classList.contains("dark");
+  localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+  updateThemeToggle();
 });
 
 renderTasks();
