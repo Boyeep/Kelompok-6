@@ -143,6 +143,20 @@ h1 {
   padding: 5px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.task-item.adding {
+  opacity: 0;
+  transform: translateY(-15px);
+}
+
+.task-item.removing {
+  opacity: 0;
+  transform: translateX(30px);
 }
 
 .task-item span {
@@ -263,6 +277,27 @@ h1 {
   font-family: inherit;
   background: var(--card-bg);
   color: var(--text);
+}
+
+.task-text.edit-saved {
+  animation: editSaved 0.3s ease;
+}
+
+@keyframes editSaved {
+  0% {
+    opacity: 0;
+    scale: 0.85;
+  }
+
+  60% {
+    opacity: 1;
+    scale: 1.05;
+  }
+
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
 }
 
 .edit-btn {
