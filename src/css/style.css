@@ -13,6 +13,7 @@
 }
 
 body.dark {
+  color-scheme: dark;
   --bg: #172136;
   --card-bg: #111827;
   --text: #e5e7eb;
