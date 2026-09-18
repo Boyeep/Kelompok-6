@@ -100,6 +100,15 @@ function renderTasks() {
     const li = document.createElement("li");
     li.className = "task-item";
     li.dataset.id = task.id;
+    li.draggable = true;
+
+    li.addEventListener("dragstart", () => {
+  li.classList.add("dragging");
+});
+
+li.addEventListener("dragend", () => {
+  li.classList.remove("dragging");
+});
 
     // TODO (Fitur #1 - Tandai Selesai):
     // Tambahkan <input type="checkbox"> di sini yang mencerminkan
@@ -176,12 +185,52 @@ function renderTasks() {
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
   });
+  
+  taskList.addEventListener("dragover", (event) => {
+    event.preventDefault();
+
+    const dragging = document.querySelector(".dragging");
+    const afterElement = getDragAfterElement(taskList, event.clientY);
+
+    if (afterElement == null) {
+      taskList.appendChild(dragging);
+    } else {
+      taskList.insertBefore(dragging, afterElement);
+    }
+  });
+
 
   // TODO (Fitur #4 - Simpan ke localStorage):
   // Setiap kali renderTasks() dipanggil, data "tasks" sudah berubah,
   // jadi ini tempat yang pas untuk menyimpan ulang ke localStorage.
   // Hint: localStorage.setItem("tasks", JSON.stringify(tasks));
   saveToLocalStorage();
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [
+    ...container.querySelectorAll(".task-item:not(.dragging)")
+  ];
+
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+
+      if (offset < 0 && offset > closest.offset) {
+        return {
+          offset: offset,
+          element: child
+        };
+      } else {
+        return closest;
+      }
+    },
+    {
+      offset: Number.NEGATIVE_INFINITY,
+      element: null
+    }
+  ).element;
 }
 
 function addTask(text) {
