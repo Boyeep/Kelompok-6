@@ -311,3 +311,11 @@ h1 {
 .theme-toggle:hover {
   background: var(--accent-hover);
 }
+
+.button-icon {
+  display: inline-block;
+  min-width: 1em;
+  text-align: center;
+  font-size: 1.1em;
+  line-height: 1;
+}

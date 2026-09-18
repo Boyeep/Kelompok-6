@@ -122,7 +122,9 @@ function renderTasks() {
 
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
-    editBtn.innerHTML = '<i class="fa-solid fa-pen-to-square"></i>';
+    editBtn.innerHTML = '<span class="button-icon" aria-hidden="true">✎</span>';
+    editBtn.setAttribute("aria-label", "Edit task");
+    editBtn.title = "Edit task";
     editBtn.addEventListener("click", () => {
       const editInput = document.createElement("input");
       editInput.type = "text";
@@ -168,7 +170,9 @@ function renderTasks() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    deleteBtn.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    deleteBtn.innerHTML = '<span class="button-icon" aria-hidden="true">×</span>';
+    deleteBtn.setAttribute("aria-label", "Hapus task");
+    deleteBtn.title = "Hapus task";
     deleteBtn.addEventListener("click", () => deleteTask(task.id));
 
     li.appendChild(checkbox); // checkbox buat fitur 1
@@ -253,14 +257,23 @@ const themeToggle = document.getElementById("theme-toggle");
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark") {
   document.body.classList.add("dark");
-  themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i>';
 }
+
+function updateThemeToggle() {
+  const isDarkMode = document.body.classList.contains("dark");
+  const label = isDarkMode ? "Aktifkan mode terang" : "Aktifkan mode gelap";
+  themeToggle.innerHTML = `<span class="button-icon" aria-hidden="true">${isDarkMode ? "☀" : "☾"}</span>`;
+  themeToggle.setAttribute("aria-label", label);
+  themeToggle.title = label;
+}
+
+updateThemeToggle();
 
 themeToggle.addEventListener("click", () => {
   document.body.classList.toggle("dark");
   const isDarkMode = document.body.classList.contains("dark");
   localStorage.setItem("theme", isDarkMode ? "dark" : "light");
-  themeToggle.innerHTML = isDarkMode ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+  updateThemeToggle();
 });
 
 renderTasks();
