@@ -61,18 +61,24 @@ h1 {
 
 .task-form {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
 }
 
 .task-form input {
-  flex: 1;
+  flex: 1 1 160px;
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--input-border);
   border-radius: 8px;
   font-size: 1rem;
   background: var(--card-bg);
   color: var(--text);
+}
+
+.task-form input[type="date"] {
+  flex: 1 1 140px;
 }
 
 .task-form button {
@@ -162,6 +168,12 @@ h1 {
 .task-item span {
   flex: 1;
   word-break: break-word;
+}
+
+.task-item .task-due-date {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  color: var(--text-muted, #6b7280);
 }
 
 .task-item .delete-btn {

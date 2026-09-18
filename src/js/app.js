@@ -7,6 +7,7 @@
 const taskForm = document.getElementById("task-form");
 const taskInput = document.getElementById("task-input");
 const taskList = document.getElementById("task-list");
+const dueDateInput = document.getElementById("due-date-input");
 const clearCompletedButton = document.getElementById("clear-completed");
 const filterButtons = document.querySelectorAll(".filter-btn");
 
@@ -41,6 +42,7 @@ if (savedTasks !== null) {
             id: Number(task.id),
             text: task.text,
             completed: Boolean(task.completed),
+            dueDate: typeof task.dueDate === "string" ? task.dueDate : "",
           }))
       : [];
   } catch (error) {
@@ -145,6 +147,12 @@ function renderTasks() {
     span.className = "task-text";
     span.textContent = task.text;
 
+    const dueDateSpan = document.createElement("span");
+    dueDateSpan.className = "task-due-date";
+    if (task.dueDate) {
+      dueDateSpan.textContent = "📅 " + formatDueDate(task.dueDate);
+    }
+
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
     editBtn.innerHTML = '<span class="button-icon" aria-hidden="true">✎</span>';
@@ -216,6 +224,7 @@ function renderTasks() {
 
     li.appendChild(checkbox); // checkbox buat fitur 1
     li.appendChild(span);
+    if (task.dueDate) li.appendChild(dueDateSpan);
     li.appendChild(editBtn);
     li.appendChild(deleteBtn);
     taskList.appendChild(li);
@@ -296,7 +305,7 @@ taskList.addEventListener("drop", (event) => {
   saveToLocalStorage();
 });
 
-function addTask(text) {
+function addTask(text, dueDate = "") {
   const trimmed = text.trim();
   if (trimmed === "") return;
 
@@ -306,6 +315,7 @@ function addTask(text) {
     id: nextId++,
     text: trimmed,
     completed: false,
+    dueDate,
   });
 
   renderTasks();
@@ -328,6 +338,12 @@ function deleteTask(id) {
     tasks = tasks.filter((task) => task.id !== id);
     renderTasks();
   }, 300);
+}
+
+function formatDueDate(dateString) {
+  const parts = dateString.split("-");
+  if (parts.length !== 3) return dateString;
+  return parts[2] + "/" + parts[1] + "/" + parts[0];
 }
 
 // TODO (Fitur #1 - Tandai Selesai):
@@ -391,8 +407,9 @@ clearCompletedButton.addEventListener("click", clearCompleted);
 
 taskForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  addTask(taskInput.value);
+  addTask(taskInput.value, dueDateInput.value);
   taskInput.value = "";
+  dueDateInput.value = "";
   taskInput.focus();
 });
 
