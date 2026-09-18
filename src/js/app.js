@@ -267,20 +267,30 @@ function editTask(id, newText) {
 }
 
 function clearCompleted() {
+  const completedIds = new Set(
+    tasks.filter((task) => task.completed).map((task) => task.id),
+  );
+  if (completedIds.size === 0) return;
+
+  const removeCompleted = () => {
+    tasks = tasks.filter((task) => !completedIds.has(task.id));
+    renderTasks();
+  };
+
   const completedItems = taskList.querySelectorAll(
     ".task-item.completed"
   );
 
-  if (completedItems.length === 0) return;
+  if (completedItems.length === 0) {
+    removeCompleted();
+    return;
+  }
 
   completedItems.forEach((li) => {
     li.classList.add("removing");
   });
 
-  setTimeout(() => {
-    tasks = tasks.filter((task) => task.completed !== true);
-    renderTasks();
-  }, 300);
+  setTimeout(removeCompleted, 300);
 }
 
 filterButtons.forEach((button) => {
