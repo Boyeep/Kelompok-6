@@ -51,6 +51,54 @@ Tidak ada langkah yang bersifat wajib selain membuka berkas HTML tersebut.
 Tools di atas bersifat opsional dan dapat dipasang secara mandiri sesuai
 kebutuhan masing-masing.
 
+Untuk **install PWA dan akses offline**, jalankan melalui localhost atau HTTPS,
+bukan klik langsung berkas HTML. Contoh dari folder proyek:
+
+```sh
+python -m http.server 8000 --directory src
+```
+
+Buka `http://localhost:8000`, tunggu status **Siap offline**, lalu pilih
+**Install app** di toolbar atas. Sesudah dibuka sekali saat online, papan bisa
+dibuka dan diedit tanpa koneksi. Data tersimpan lokal di browser/perangkat itu;
+data dari URL `file://`, localhost, atau domain hosting berbeda tidak otomatis
+berpindah karena masing-masing memiliki penyimpanan sendiri.
+
+Papan sekarang mendukung grup di sidebar kiri, banyak kertas, aset tempel,
+drag/pan, posisi dan kamera tersimpan, scrollbar task, serta kalender dengan
+pilihan **Grup ini / Semua grup**. Slider kanan mengatur luas area yang terlihat:
+geser ke atas untuk memperluas papan dan membuat kertas tampak lebih kecil.
+Tombol kembali ke kertas memusatkan tampilan jika card berada di luar layar.
+Memilih kertas atau grup lewat sidebar menggeser tampilan dengan halus.
+Tarik papan/kertas untuk menghentikan perpindahan dan langsung mengendalikannya.
+Tombol Mode fokus menjadi satu-satunya kontrol buka/tutup kedua panel tanpa
+menggeser kertas. Tekan lagi untuk membuka sidebar dan toolbar. Status tersimpan
+saat refresh; ikon mendukung keyboard, sementara transisi panel
+mengikuti preferensi reduced motion.
+Task dari versi satu card otomatis masuk ke grup pertama; key `tasks` lama
+tetap dipertahankan. Semua data papan baru memakai key `my-todo-board-v1`.
+Tombol **Hapus grup** di dialog edit nama grup membuka konfirmasi hapus grup beserta
+kertas, task, dan asetnya. Jika grup terakhir dihapus, tersedia grup kosong baru.
+Dropdown kalender dan pilihan grup memakai warna tema, transisi halus, serta
+navigasi keyboard (panah, Home/End, Enter, Tab, dan Escape), termasuk saat offline.
+
+Pengujian browser dijalankan dengan Node.js 24 dan Chrome/Chromium:
+
+```sh
+node tests/workspace.test.cjs
+```
+
+Pengujian menjalankan server lokal sementara dan profil browser terpisah,
+memeriksa migrasi, animasi, grup/card, drag pada zoom, kalender, mobile, serta
+reload dan edit offline. Gunakan variabel `BROWSER_BINARY` bila lokasi browser
+berbeda. Screenshot hasil uji tersimpan di folder temporary yang dicetak.
+
+Saat merilis perubahan UI atau aset, naikkan versi `CACHE` di
+`src/service-worker.js` agar seluruh berkas aplikasi memakai versi yang sama.
+Tambahkan aset kreatif final ke `APP_SHELL` agar tersedia offline sebelum aset
+itu pernah ditempel. Syarat install browser dijelaskan di
+[panduan PWA MDN](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Making_PWAs_installable).
+
 ---
 
 ## 3. Struktur Folder
@@ -63,6 +111,12 @@ src/
 └── js/
     └── app.js      # logic dasar (tambah & hapus task) + komentar TODO
 ```
+
+Fondasi tampilan bulletin board memakai papan cork dan card kertas sementara.
+Aset tim kreatif dapat ditaruh di [`src/assets/board/`](./src/assets/board/) dan
+dihubungkan lewat [`creative-assets.css`](./src/css/creative-assets.css).
+Lihat [panduan pemasangan aset](./src/assets/board/README.md) untuk tekstur,
+perekat, dekorasi, dan pengaturan ukurannya.
 
 Fitur yang sudah berfungsi pada starter:
 - Menambahkan task baru melalui form.

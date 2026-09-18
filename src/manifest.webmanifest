@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "My To Do Board",
+  "short_name": "To Do Board",
+  "description": "Papan pribadi untuk task, grup, dan kalender, tersedia offline.",
+  "lang": "id",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#bd966f",
+  "theme_color": "#3c5446",
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
