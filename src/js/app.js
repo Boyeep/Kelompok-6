@@ -16,6 +16,7 @@ const filterButtons = document.querySelectorAll(".filter-btn");
 let tasks = [];
 let nextId = 1;
 let currentFilter = "all";
+let newlyAddedTaskId = null;
 
 // TODO (Fitur #4 - Simpan ke localStorage):
 // Saat aplikasi pertama kali dibuka, load "tasks" dari localStorage
@@ -101,6 +102,14 @@ function renderTasks() {
     li.className = "task-item";
     li.dataset.id = task.id;
 
+    if (task.id === newlyAddedTaskId) {
+      li.classList.add("adding");
+
+      requestAnimationFrame(() => {
+        li.classList.remove("adding");
+      });
+    }
+
     // TODO (Fitur #1 - Tandai Selesai):
     // Tambahkan <input type="checkbox"> di sini yang mencerminkan
     // task.completed, dan tambahkan class "completed" pada `li`
@@ -133,12 +142,26 @@ function renderTasks() {
       const saveEdit = () => {
         if (isSaved) return;
         isSaved = true;
+
         editTask(task.id, editInput.value);
 
-        // Perbarui teks saja agar blur tidak menghapus tombol yang sedang diklik.
         span.textContent = task.text;
-        checkbox.setAttribute("aria-label", `Tandai "${task.text}" sebagai selesai`);
+        checkbox.setAttribute(
+          "aria-label",
+          `Tandai "${task.text}" sebagai selesai`,
+        );
+
         li.replaceChild(span, editInput);
+
+        span.classList.add("edit-saved");
+
+        span.addEventListener(
+          "animationend",
+          () => {
+            span.classList.remove("edit-saved");
+          },
+          { once: true },
+        );
       };
 
       editInput.addEventListener("keydown", (event) => {
@@ -188,18 +211,36 @@ function addTask(text) {
   const trimmed = text.trim();
   if (trimmed === "") return;
 
-  tasks.push({
+  const newTask = {
     id: nextId++,
     text: trimmed,
     completed: false,
-  });
+  };
+
+  tasks.push(newTask);
+
+  newlyAddedTaskId = newTask.id;
 
   renderTasks();
+
+  newlyAddedTaskId = null;
 }
 
 function deleteTask(id) {
-  tasks = tasks.filter((task) => task.id !== id);
-  renderTasks();
+  const li = taskList.querySelector(`[data-id="${id}"]`);
+
+  if (!li) {
+    tasks = tasks.filter((task) => task.id !== id);
+    renderTasks();
+    return;
+  }
+
+  li.classList.add("removing");
+
+  setTimeout(() => {
+    tasks = tasks.filter((task) => task.id !== id);
+    renderTasks();
+  }, 300);
 }
 
 // TODO (Fitur #1 - Tandai Selesai):
@@ -226,8 +267,20 @@ function editTask(id, newText) {
 }
 
 function clearCompleted() {
-  tasks = tasks.filter((task) => task.completed !== true);
-  renderTasks();
+  const completedItems = taskList.querySelectorAll(
+    ".task-item.completed"
+  );
+
+  if (completedItems.length === 0) return;
+
+  completedItems.forEach((li) => {
+    li.classList.add("removing");
+  });
+
+  setTimeout(() => {
+    tasks = tasks.filter((task) => task.completed !== true);
+    renderTasks();
+  }, 300);
 }
 
 filterButtons.forEach((button) => {
