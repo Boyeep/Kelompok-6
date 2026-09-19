@@ -1,10 +1,10 @@
 // Bump this version whenever the app shell or bundled creative assets change.
-const CACHE = "my-todo-board-shell-v13";
+const CACHE = "my-todo-board-shell-v14";
 const APP_SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./css/style.css", "./css/board-theme.css", "./css/interactions.css",
   "./css/creative-assets.css", "./css/workspace.css", "./css/panels.css",
-  "./js/app.js", "./js/paper-drag.js", "./js/dropdowns.js", "./js/panels.js", "./js/workspace.js", "./js/asset-catalog.js", "./js/pwa.js",
+  "./js/task-row.js", "./js/app.js", "./js/paper-drag.js", "./js/dropdowns.js", "./js/panels.js", "./js/board-storage.js", "./js/calendar-motion.js", "./js/board-calendar.js", "./js/workspace.js", "./js/asset-catalog.js", "./js/pwa.js",
   "./assets/board/leaf.svg", "./assets/board/star.svg", "./assets/board/tape.svg",
   "./assets/icons/icon.svg", "./assets/icons/icon-192.png", "./assets/icons/icon-512.png", "./assets/icons/maskable-512.png",
 ];

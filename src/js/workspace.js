@@ -1,70 +1,15 @@
 (() => {
   "use strict";
-  const STORAGE_KEY = "my-todo-board-v1";
   const $ = (selector) => document.querySelector(selector);
   const viewport = $("#board-viewport");
   const world = $("#board-world");
   const cardLayer = $("#card-layer");
   const assetLayer = $("#asset-layer");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  const contentTransitions = new Map();
   const contentMotion = { duration: 240, easing: "cubic-bezier(.22, 1, .36, 1)" };
-  function cancelContentTransition(target) {
-    const transition = contentTransitions.get(target);
-    if (!transition) return;
-    contentTransitions.delete(target);
-    transition.animations.forEach((animation) => animation.cancel());
-    transition.snapshot.remove();
-    target.style.overflow = transition.overflow;
-  }
-  function captureContent(target, animate) {
-    let previous = null;
-    if (animate && !reduced.matches) {
-      const style = getComputedStyle(target);
-      const snapshot = target.cloneNode(true);
-      snapshot.removeAttribute("id");
-      snapshot.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
-      snapshot.removeAttribute("aria-live");
-      snapshot.querySelectorAll("[aria-live]").forEach((node) => node.removeAttribute("aria-live"));
-      snapshot.classList.add("motion-snapshot");
-      snapshot.setAttribute("aria-hidden", "true"); snapshot.inert = true;
-      const scrollTops = [target, ...target.querySelectorAll("*")].map((node) => node.scrollTop);
-      previous = { snapshot, height: target.offsetHeight, transform: style.transform, opacity: style.opacity, scrollTops };
-    }
-    // Capture the visible state before canceling, so rapid navigation stays continuous.
-    cancelContentTransition(target);
-    return previous;
-  }
-  function transitionContent(target, previous, direction, axis = "X", resize = false) {
-    if (!previous || reduced.matches) return;
-    const nextHeight = target.offsetHeight;
-    const snapshot = previous.snapshot;
-    snapshot.style.height = `${previous.height}px`;
-    target.parentElement.append(snapshot);
-    [snapshot, ...snapshot.querySelectorAll("*")].forEach((node, index) => { node.scrollTop = previous.scrollTops[index]; });
-    const distance = axis === "X" ? 18 : 10;
-    const incoming = { transform: `translate${axis}(${direction * distance}px)`, opacity: 0 };
-    const settled = { transform: "translate(0, 0)", opacity: 1 };
-    const overflow = target.style.overflow;
-    if (resize && Math.abs(nextHeight - previous.height) > 1) {
-      incoming.height = `${previous.height}px`; settled.height = `${nextHeight}px`;
-      target.style.overflow = "clip";
-    }
-    const exit = snapshot.animate([
-      { transform: previous.transform, opacity: previous.opacity },
-      { transform: `translate${axis}(${-direction * distance}px)`, opacity: 0 },
-    ], { ...contentMotion, duration: 180, fill: "both" });
-    const enter = target.animate([incoming, settled], { ...contentMotion, fill: "both" });
-    const transition = { snapshot, animations: [exit, enter], overflow };
-    contentTransitions.set(target, transition);
-    enter.onfinish = () => { if (contentTransitions.get(target) === transition) cancelContentTransition(target); };
-  }
   const catalog = new Map(window.BOARD_ASSETS.map((asset) => [asset.id, asset]));
   const cards = new Map();
   const assets = new Map();
-  const uid = () => globalThis.crypto?.randomUUID?.() || `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
-  const clamp = (number, min, max) => Math.min(max, Math.max(min, number));
   let toastTimer;
   function notify(message, persistent = false) {
     clearTimeout(toastTimer);
@@ -72,43 +17,9 @@
     $("#save-status").hidden = false;
     if (!persistent) toastTimer = setTimeout(() => { $("#save-status").hidden = true; }, 3400);
   }
-  function normalizeTasks(value) {
-    const used = new Set();
-    let next = 1;
-    return (Array.isArray(value) ? value : []).filter((task) => task && typeof task.text === "string").map((task) => {
-      let id = finite(task.id, next);
-      if (used.has(id)) id = next;
-      used.add(id); next = Math.max(next, id + 1);
-      return { id, text: task.text, completed: Boolean(task.completed), dueDate: typeof task.dueDate === "string" ? task.dueDate : "" };
-    });
-  }
-  function load() {
-    let parsed;
-    try { parsed = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { notify("Data papan tidak terbaca. Task lama tetap dipertahankan.", true); }
-    if (parsed?.version === 1 && Array.isArray(parsed.groups) && parsed.groups.length) {
-      const groupIds = new Set();
-      const groups = parsed.groups.filter((group) => group && typeof group.id === "string" && !groupIds.has(group.id) && groupIds.add(group.id)).map((group) => ({
-        id: group.id, name: typeof group.name === "string" ? group.name : "Grup saya",
-        camera: { x: finite(group.camera?.x), y: finite(group.camera?.y), zoom: clamp(finite(group.camera?.zoom, 1), .5, 100 / 60) },
-      }));
-      if (groups.length) {
-        const itemIds = new Set();
-        const validItems = (list) => (Array.isArray(list) ? list : []).filter((item) => item && typeof item.id === "string" && groupIds.has(item.groupId) && !itemIds.has(item.id) && itemIds.add(item.id));
-        const position = (item) => ({ id: item.id, groupId: item.groupId, x: finite(item.x, 48), y: finite(item.y, 56), z: finite(item.z, 1) });
-        return { version: 1, groups, activeGroupId: groupIds.has(parsed.activeGroupId) ? parsed.activeGroupId : groups[0].id,
-          cards: validItems(parsed.cards).map((card) => ({ ...position(card), title: typeof card.title === "string" ? card.title : "My To Do List", tasks: normalizeTasks(card.tasks) })),
-          assets: validItems(parsed.assets).filter((asset) => catalog.has(asset.assetId)).map((asset) => ({ ...position(asset), assetId: asset.assetId })),
-        };
-      }
-    }
-    let legacy = [];
-    try { legacy = normalizeTasks(JSON.parse(localStorage.getItem("tasks"))); } catch { /* Leave the legacy storage untouched. */ }
-    const groupId = uid();
-    return { version: 1, activeGroupId: groupId, groups: [{ id: groupId, name: "Grup saya", camera: { x: 0, y: 0, zoom: 1 } }], cards: [{ id: uid(), groupId, title: "My To Do List", x: 48, y: 56, z: 1, tasks: legacy }], assets: [] };
-  }
-  let hadSavedBoard = false;
-  try { hadSavedBoard = Boolean(localStorage.getItem(STORAGE_KEY)); } catch { /* No persistence available. */ }
-  const state = load();
+  const storage = createBoardStorage(catalog, notify);
+  const { uid, clamp } = storage;
+  const { state, hadSavedBoard } = storage.load();
   let cameraAnimation = null;
   let groupTransition = null;
   let stack = Math.max(1, ...state.cards.concat(state.assets).map((item) => item.z));
@@ -123,8 +34,7 @@
   }
   function save() {
     clearTimeout(saveTimer);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    catch { notify("Penyimpanan perangkat penuh atau tidak tersedia. Perubahan belum tersimpan.", true); }
+    storage.save(state);
   }
   function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 150); }
   const board = window.boardWorkspace = {
@@ -217,7 +127,7 @@
   }
   function change() {
     save(); renderSidebar();
-    if ($("#calendar-dialog").open) renderCalendar();
+    if ($("#calendar-dialog").open) calendar.render();
   }
   function mountCard(card, entering = false) {
     const element = $("#paper-template").content.firstElementChild.cloneNode(true);
@@ -242,54 +152,87 @@
   function mountAsset(asset) {
     const artwork = catalog.get(asset.assetId);
     const element = document.createElement("div");
-    element.className = "board-asset"; element.tabIndex = 0; element.dataset.assetId = asset.id;
-    element.setAttribute("role", "group"); element.setAttribute("aria-label", `Aset ${artwork.name}. Tarik atau gunakan tombol panah untuk menggeser.`);
-    element.style.width = `${artwork.width}px`; element.style.height = `${artwork.height}px`; element.style.zIndex = asset.z;
-    const image = new Image(); image.src = artwork.src; image.alt = ""; image.draggable = false;
-    const remove = document.createElement("button"); remove.className = "asset-remove"; remove.textContent = "×"; remove.setAttribute("aria-label", `Lepas aset ${artwork.name}`);
-    element.append(image, remove); assetLayer.append(element);
+    element.className = "board-asset";
+    element.tabIndex = 0;
+    element.dataset.assetId = asset.id;
+    element.setAttribute("role", "group");
+    element.setAttribute("aria-label", `Aset ${artwork.name}. Tarik atau gunakan tombol panah untuk menggeser.`);
+    element.style.width = `${artwork.width}px`;
+    element.style.height = `${artwork.height}px`;
+    element.style.zIndex = asset.z;
+    const image = new Image();
+    image.src = artwork.src;
+    image.alt = "";
+    image.draggable = false;
+    const remove = document.createElement("button");
+    remove.className = "asset-remove";
+    remove.textContent = "×";
+    remove.setAttribute("aria-label", `Lepas aset ${artwork.name}`);
+    element.append(image, remove);
+    assetLayer.append(element);
     const drag = bindBoardDrag(element, element, asset, board);
     assets.set(asset.id, { element, drag });
     element.addEventListener("pointerenter", () => board.front(asset, element));
     element.addEventListener("pointerdown", () => board.front(asset, element));
     element.addEventListener("focusin", () => board.front(asset, element));
-    remove.addEventListener("click", () => { drag.destroy(); element.remove(); assets.delete(asset.id); state.assets = state.assets.filter((item) => item.id !== asset.id); change(); });
+    remove.addEventListener("click", () => {
+      drag.destroy();
+      element.remove();
+      assets.delete(asset.id);
+      state.assets = state.assets.filter((item) => item.id !== asset.id);
+      change();
+    });
+  }
+  function createGroupSection(entry) {
+    const section = document.createElement("div");
+    section.className = "group-section";
+    section.dataset.groupId = entry.id;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "group-button";
+    button.dataset.linkId = entry.id;
+    const count = document.createElement("span");
+    count.className = "group-count";
+    button.append(document.createElement("span"), count);
+    button.addEventListener("click", () => selectGroup(entry.id, true));
+    const list = document.createElement("div");
+    list.className = "group-cards";
+    section.append(button, list);
+    return section;
+  }
+  function renderCardLinks(list, groupCards) {
+    list.hidden = groupCards.length === 0;
+    const links = new Map([...list.children].map((link) => [link.dataset.linkId, link]));
+    groupCards.forEach((card, index) => {
+      let link = links.get(card.id);
+      if (!link) {
+        link = document.createElement("button");
+        link.className = "sidebar-card-link";
+        link.dataset.linkId = card.id;
+        link.append(document.createElement("span"), document.createElement("small"));
+        link.addEventListener("click", () => { closeSidebar(); focusItem(card, true, true); });
+      }
+      link.firstElementChild.textContent = card.title;
+      link.lastElementChild.textContent = card.tasks.filter((task) => !task.completed).length;
+      if (list.children[index] !== link) list.insertBefore(link, list.children[index] || null);
+      links.delete(card.id);
+    });
+    links.forEach((link) => link.remove());
   }
   function renderSidebar() {
     const nav = $("#group-list");
     const sections = new Map([...nav.children].map((section) => [section.dataset.groupId, section]));
     state.groups.forEach((entry, index) => {
-      let section = sections.get(entry.id);
-      if (!section) {
-        section = document.createElement("div"); section.className = "group-section"; section.dataset.groupId = entry.id;
-        const button = document.createElement("button"); button.type = "button"; button.className = "group-button"; button.dataset.linkId = entry.id;
-        const name = document.createElement("span");
-        const count = document.createElement("span"); count.className = "group-count";
-        button.append(name, count); button.addEventListener("click", () => selectGroup(entry.id, true)); section.append(button);
-        const list = document.createElement("div"); list.className = "group-cards"; section.append(list);
-      }
+      const section = sections.get(entry.id) || createGroupSection(entry);
       const button = section.querySelector(".group-button");
       const selected = entry.id === state.activeGroupId;
-      button.classList.toggle("active", selected); button.setAttribute("aria-pressed", String(selected));
+      button.classList.toggle("active", selected);
+      button.setAttribute("aria-pressed", String(selected));
       const groupCards = state.cards.filter((card) => card.groupId === entry.id);
       const active = groupCards.reduce((sum, card) => sum + card.tasks.filter((task) => !task.completed).length, 0);
-      button.firstElementChild.textContent = entry.name; button.lastElementChild.textContent = `${active} task`;
-      const list = section.querySelector(".group-cards");
-      list.hidden = groupCards.length === 0;
-      const links = new Map([...list.children].map((link) => [link.dataset.linkId, link]));
-      groupCards.forEach((card, cardIndex) => {
-        let link = links.get(card.id);
-        if (!link) {
-          link = document.createElement("button"); link.className = "sidebar-card-link"; link.dataset.linkId = card.id;
-          link.append(document.createElement("span"), document.createElement("small"));
-          link.addEventListener("click", () => { closeSidebar(); focusItem(card, true, true); });
-        }
-        link.firstElementChild.textContent = card.title;
-        link.lastElementChild.textContent = card.tasks.filter((task) => !task.completed).length;
-        if (list.children[cardIndex] !== link) list.insertBefore(link, list.children[cardIndex] || null);
-        links.delete(card.id);
-      });
-      links.forEach((link) => link.remove());
+      button.firstElementChild.textContent = entry.name;
+      button.lastElementChild.textContent = `${active} task`;
+      renderCardLinks(section.querySelector(".group-cards"), groupCards);
       if (nav.children[index] !== section) nav.insertBefore(section, nav.children[index] || null);
       sections.delete(entry.id);
     });
@@ -313,14 +256,14 @@
   }
   function spawnPosition(width, height) {
     const cam = camera();
-    const viewWidth = viewBounds().width / cam.zoom;
-    const originX = Math.max(24, (viewBounds().width - width * cam.zoom) / 2) / cam.zoom - cam.x / cam.zoom;
+    const viewWidth = viewBounds().width;
+    const originX = Math.max(24, (viewWidth - width * cam.zoom) / 2) / cam.zoom - cam.x / cam.zoom;
     const originY = 56 / cam.zoom - cam.y / cam.zoom;
     const occupied = state.cards.concat(state.assets).filter((item) => item.groupId === state.activeGroupId).map((item) => {
       const element = cards.get(item.id)?.element || assets.get(item.id)?.element;
       return { x: item.x - 16, y: item.y - 20, width: (element?.offsetWidth || 520) + 32, height: (element?.offsetHeight || 360) + 40 };
     });
-    const columns = Math.max(1, Math.floor(viewWidth / (width + 48)));
+    const columns = Math.max(1, Math.floor(viewWidth / cam.zoom / (width + 48)));
     for (let index = 0; index < 10000; index++) {
       const x = originX + (index % columns) * (width + 48);
       const y = originY + Math.floor(index / columns) * (height + 64);
@@ -464,11 +407,9 @@
     const box = dialog.getBoundingClientRect();
     if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dialog.close();
   }));
-  $("#calendar-dialog").addEventListener("close", () => { [...contentTransitions.keys()].forEach(cancelContentTransition); });
   reduced.addEventListener("change", () => {
     if (!reduced.matches) return;
     stopNavigation(false);
-    [...contentTransitions.keys()].forEach(cancelContentTransition);
     menuAnimation?.cancel(); menuAnimation = null; createMenu.hidden = !createMenuOpen;
   });
   function closeSidebar() {
@@ -527,85 +468,7 @@
   $("#reset-view").addEventListener("click", resetView);
   let previousMobile = innerWidth <= 700;
   window.addEventListener("resize", () => { const mobile = innerWidth <= 700; if (mobile !== previousMobile) { previousMobile = mobile; resetView(); } });
-  // Calendar dates are local dates, avoiding UTC shifts of date-input values.
-  const dateKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-  let selectedDate = dateKey(new Date());
-  let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const monthStamp = (date) => date.getFullYear() * 12 + date.getMonth();
-  let renderedMonthStamp = null;
-  let renderedDayKey = null;
-  function calendarEntries() {
-    return state.cards.filter((card) => $("#calendar-scope").value === "all" || card.groupId === state.activeGroupId).flatMap((card) => card.tasks.map((task) => ({ card, task })));
-  }
-  function renderCalendar(options = {}) {
-    const entries = calendarEntries();
-    const stamp = monthStamp(calendarMonth);
-    const monthChanged = stamp !== renderedMonthStamp;
-    const monthDirection = renderedMonthStamp === null ? 0 : Math.sign(stamp - renderedMonthStamp);
-    const animate = $("#calendar-dialog").open && !reduced.matches;
-    const grid = $("#calendar-grid");
-    const heading = $("#calendar-month");
-    const previousGrid = monthChanged ? captureContent(grid, animate && renderedMonthStamp !== null) : null;
-    const previousHeading = monthChanged ? captureContent(heading, animate && renderedMonthStamp !== null) : null;
-    if (monthChanged) { heading.textContent = calendarMonth.toLocaleDateString("id-ID", { month: "long", year: "numeric" }); grid.replaceChildren(); }
-    const counts = new Map(); entries.forEach(({ task }) => { if (task.dueDate) counts.set(task.dueDate, (counts.get(task.dueDate) || 0) + 1); });
-    const start = new Date(calendarMonth); start.setDate(1 - (start.getDay() + 6) % 7);
-    for (let index = 0; index < 42; index++) {
-      const date = new Date(start); date.setDate(start.getDate() + index);
-      const key = dateKey(date); const count = counts.get(key) || 0;
-      let button = grid.children[index];
-      if (!button) {
-        button = document.createElement("button"); button.className = "calendar-cell"; button.dataset.date = key;
-        const number = document.createElement("span"); number.textContent = date.getDate(); const badge = document.createElement("small");
-        button.append(number, badge);
-        button.addEventListener("click", () => {
-          const direction = Math.sign(key.localeCompare(selectedDate));
-          selectedDate = key;
-          if (monthStamp(date) !== monthStamp(calendarMonth)) calendarMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-          renderCalendar({ direction });
-          [...grid.children].find((cell) => cell.dataset.date === key)?.focus({ preventScroll: true });
-        });
-        grid.append(button);
-      }
-      button.classList.toggle("today", key === dateKey(new Date())); button.classList.toggle("selected", key === selectedDate); button.classList.toggle("outside", date.getMonth() !== calendarMonth.getMonth());
-      button.setAttribute("aria-pressed", String(key === selectedDate)); button.setAttribute("aria-label", `${date.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}, ${count} task`);
-      button.lastElementChild.textContent = count ? `${count} task` : "";
-    }
-    renderedMonthStamp = stamp;
-    transitionContent(grid, previousGrid, monthDirection);
-    transitionContent(heading, previousHeading, monthDirection);
-    const dated = entries.filter(({ task }) => task.dueDate === selectedDate);
-    const undated = entries.filter(({ task }) => !task.dueDate).length;
-    const dayKey = JSON.stringify([selectedDate, undated, dated.map(({ card, task }) => [card.id, task.id, task.text, task.completed, card.title, state.groups.find((entry) => entry.id === card.groupId).name])]);
-    if (dayKey !== renderedDayKey) {
-      const panel = $("#calendar-day-view");
-      const previousDay = captureContent(panel, animate && renderedDayKey !== null);
-      const [year, month, day] = selectedDate.split("-").map(Number);
-      $("#calendar-day-title").textContent = new Date(year, month - 1, day).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" });
-      const list = $("#calendar-tasks"); list.replaceChildren();
-      if (!dated.length) { const empty = document.createElement("li"); empty.textContent = "Tidak ada task jatuh tempo pada tanggal ini."; empty.className = "calendar-note"; list.append(empty); }
-      dated.forEach(({ card, task }) => {
-        const li = document.createElement("li"); const button = document.createElement("button"); button.className = "calendar-task"; button.classList.toggle("completed", task.completed);
-        const text = document.createElement("span"); text.textContent = task.text;
-        const source = document.createElement("small"); source.textContent = `${state.groups.find((entry) => entry.id === card.groupId).name} / ${card.title} · ${task.completed ? "Selesai" : "Aktif"}`;
-        button.append(text, source); button.addEventListener("click", () => {
-          $("#calendar-dialog").close(); focusItem(card); const mounted = cards.get(card.id);
-          mounted.element.querySelector('[data-filter="all"]').click();
-          const row = [...mounted.element.querySelectorAll(".task-item")].find((item) => Number(item.dataset.id) === task.id);
-          if (row) { const taskList = mounted.element.querySelector(".task-list"); taskList.scrollTo({ top: row.offsetTop - taskList.offsetTop, behavior: reduced.matches ? "instant" : "smooth" }); row.querySelector(".task-checkbox").focus({ preventScroll: true }); }
-        }); li.append(button); list.append(li);
-      });
-      list.scrollTop = 0;
-      $("#calendar-undated").textContent = undated ? `${undated} task tanpa tanggal jatuh tempo belum ditampilkan di kalender.` : "";
-      renderedDayKey = dayKey;
-      transitionContent(panel, previousDay, options.direction || 0, "Y", true);
-    }
-  }
-  $("#open-calendar").addEventListener("click", () => { renderCalendar(); $("#calendar-dialog").showModal(); });
-  $("#calendar-scope").addEventListener("change", () => renderCalendar());
-  $("#previous-month").addEventListener("click", () => { calendarMonth.setMonth(calendarMonth.getMonth() - 1); renderCalendar(); });
-  $("#next-month").addEventListener("click", () => { calendarMonth.setMonth(calendarMonth.getMonth() + 1); renderCalendar(); });
-  $("#calendar-today").addEventListener("click", () => { const today = new Date(); const previous = selectedDate; selectedDate = dateKey(today); calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1); renderCalendar({ direction: Math.sign(selectedDate.localeCompare(previous)) }); });
+  const calendar = createBoardCalendar({ state, cards, focusItem, reduced });
   // Board gets darker; the paper and its black ink keep the same palette.
   try { document.body.classList.toggle("dark", localStorage.getItem("theme") === "dark"); } catch { /* Theme is optional. */ }
   function updateThemeToggle() {

@@ -13,7 +13,6 @@ function createTodoController(paper, card, onChange) {
   let nextId = 1;
   let currentFilter = "all";
   let newlyAddedTaskId = null;
-  let draggedTaskId = null;
   let taskListResizeAnimation = null;
   let hasRenderedTasks = false;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -33,7 +32,7 @@ function createTodoController(paper, card, onChange) {
     nextId = savedTaskIds.reduce((max, id) => Math.max(max, id), 0) + 1;
   }
 
-  function saveToLocalStorage() {
+  function commitTasks() {
     if (disposed) return;
     card.tasks = tasks; onChange();
   }
@@ -145,7 +144,7 @@ function createTodoController(paper, card, onChange) {
   }
 
   function renderTaskList() {
-    saveToLocalStorage();
+    commitTasks();
     updateTaskCounter();
 
     filterButtons.forEach((button) => {
@@ -194,197 +193,24 @@ function createTodoController(paper, card, onChange) {
     existingItems.forEach((item) => item.remove());
   }
 
+  const reorder = createTaskReorder(taskList, {
+    getTasks: () => tasks,
+    setTasks: (ordered) => { tasks = ordered; },
+    save: commitTasks,
+    render: renderTasks,
+  });
+
   function createTaskElement(task) {
-    const li = document.createElement("li");
-    li.className = "task-item";
-    li.dataset.id = task.id;
-    li.draggable = true;
-
-    li.addEventListener("dragstart", (event) => {
-      draggedTaskId = task.id;
-      li.classList.add("dragging");
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", String(task.id));
+    return createTaskRow(task, {
+      isNew: task.id === newlyAddedTaskId,
+      reducedMotion,
+      onDragStart: (row, event) => reorder.start(task.id, row, event),
+      onDragEnd: (row) => reorder.end(row),
+      onToggle: () => toggleComplete(task.id),
+      onEdit: (text) => editTask(task.id, text),
+      onDelete: () => deleteTask(task.id),
     });
-
-    li.addEventListener("dragend", () => {
-      draggedTaskId = null;
-      li.classList.remove("dragging");
-      renderTasks();
-    });
-
-    if (task.id === newlyAddedTaskId && !reducedMotion.matches) {
-      li.classList.add("adding");
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => li.classList.remove("adding"));
-      });
-    }
-
-    if (task.completed) {
-      li.classList.add("completed");
-    }
-
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.className = "task-checkbox";
-    checkbox.setAttribute("aria-label", `Tandai "${task.text}" sebagai selesai`);
-    checkbox.checked = task.completed;
-    checkbox.addEventListener("change", () => toggleComplete(task.id));
-
-    const span = document.createElement("span");
-    span.className = "task-text";
-    span.textContent = task.text;
-
-    const dueDateSpan = document.createElement("span");
-    dueDateSpan.className = "task-due-date";
-    if (task.dueDate) {
-      dueDateSpan.textContent = formatDueDate(task.dueDate);
-    }
-
-    const editBtn = document.createElement("button");
-    editBtn.className = "edit-btn";
-    editBtn.innerHTML = '<svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 12-12 4 4-12 12H4zM14 6l4 4"/></svg>';
-    editBtn.setAttribute("aria-label", "Edit task");
-    editBtn.title = "Edit task";
-    editBtn.addEventListener("click", () => {
-      const editInput = document.createElement("input");
-      if (li.querySelector(".edit-input")) return; editInput.type = "text"; editInput.setAttribute("aria-label", "Edit nama task");
-      editInput.className = "edit-input";
-      editInput.value = task.text;
-
-      let isSaved = false;
-      let isTabbing = false;
-      const saveEdit = () => {
-        if (isSaved) return;
-        isSaved = true;
-
-        editTask(task.id, editInput.value);
-
-        span.textContent = task.text;
-        checkbox.setAttribute(
-          "aria-label",
-          `Tandai "${task.text}" sebagai selesai`,
-        );
-
-        li.replaceChild(span, editInput);
-
-        span.classList.add("edit-saved");
-
-        span.addEventListener(
-          "animationend",
-          () => {
-            span.classList.remove("edit-saved");
-          },
-          { once: true },
-        );
-      };
-
-      editInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          saveEdit();
-        } else if (event.key === "Tab") {
-          isTabbing = true;
-        }
-      });
-
-      editInput.addEventListener("blur", (event) => {
-        const nextControl = event.relatedTarget;
-        if (!isTabbing && nextControl) {
-          editTask(task.id, editInput.value);
-          document.addEventListener("click", saveEdit, { capture: true, once: true });
-        } else {
-          saveEdit();
-        }
-      });
-      li.replaceChild(editInput, span);
-      editInput.focus();
-      editInput.select();
-    });
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "delete-btn";
-    deleteBtn.innerHTML = '<svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg>';
-    deleteBtn.setAttribute("aria-label", "Hapus task");
-    deleteBtn.title = "Hapus task";
-    deleteBtn.addEventListener("click", () => deleteTask(task.id));
-
-    li.appendChild(checkbox); // checkbox buat fitur 1
-    li.appendChild(span);
-    if (task.dueDate) li.appendChild(dueDateSpan);
-    li.appendChild(editBtn);
-    li.appendChild(deleteBtn);
-    return li;
   }
-
-  function getDragAfterElement(container, y) {
-    const draggableElements = [
-      ...container.querySelectorAll(".task-item:not(.dragging)")
-    ];
-
-    return draggableElements.reduce(
-      (closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-
-        if (offset < 0 && offset > closest.offset) {
-          return {
-            offset: offset,
-            element: child
-          };
-        } else {
-          return closest;
-        }
-      },
-      {
-        offset: Number.NEGATIVE_INFINITY,
-        element: null
-      }
-    ).element;
-  }
-
-  taskList.addEventListener("dragenter", (event) => {
-    if (draggedTaskId === null || !taskList.querySelector(".dragging")) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-  });
-
-  taskList.addEventListener("dragover", (event) => {
-    const dragging = taskList.querySelector(".dragging");
-    if (draggedTaskId === null || !dragging) return;
-
-    event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
-    const afterElement = getDragAfterElement(taskList, event.clientY);
-
-    if (afterElement == null) {
-      if (dragging !== taskList.lastElementChild) taskList.appendChild(dragging);
-    } else {
-      if (dragging.nextElementSibling !== afterElement) {
-        taskList.insertBefore(dragging, afterElement);
-      }
-    }
-  });
-
-  taskList.addEventListener("drop", (event) => {
-    if (draggedTaskId === null || !taskList.querySelector(".dragging")) return;
-    event.preventDefault();
-
-    const newOrder = [...taskList.querySelectorAll(".task-item")].map((li) =>
-      Number(li.dataset.id),
-    );
-    const visibleIds = new Set(newOrder);
-    const tasksById = new Map(tasks.map((task) => [task.id, task]));
-    let visibleIndex = 0;
-
-    tasks = tasks.map((task) =>
-      visibleIds.has(task.id)
-        ? tasksById.get(newOrder[visibleIndex++])
-        : task,
-    );
-    saveToLocalStorage();
-  });
 
   function addTask(text, dueDate = "") {
     const trimmed = text.trim();
@@ -424,12 +250,6 @@ function createTodoController(paper, card, onChange) {
     scheduleRemoval(remove);
   }
 
-  function formatDueDate(dateString) {
-    const parts = dateString.split("-");
-    if (parts.length !== 3) return dateString;
-    return parts[2] + "/" + parts[1] + "/" + parts[0];
-  }
-
   function toggleComplete(id) {
     if (removingTaskIds.has(id)) return;
     const task = tasks.find((t) => t.id === id);
@@ -446,7 +266,7 @@ function createTodoController(paper, card, onChange) {
     const task = tasks.find((task) => task.id === id);
     if (task) {
       task.text = trimmed;
-      saveToLocalStorage();
+      commitTasks();
       updateTaskCounter();
     }
   }

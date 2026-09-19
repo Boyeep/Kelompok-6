@@ -105,11 +105,22 @@ itu pernah ditempel. Syarat install browser dijelaskan di
 
 ```
 src/
-├── index.html      # struktur halaman + beberapa komentar TODO
-├── css/
-│   └── style.css   # styling dasar + komentar TODO untuk style fitur baru
+├── index.html             # struktur halaman dan urutan script
+├── css/                   # tema, layout papan, dan interaksi
+├── assets/                # ikon PWA dan aset papan sementara
+├── manifest.webmanifest
+├── service-worker.js      # cache aplikasi untuk akses offline
 └── js/
-    └── app.js      # logic dasar (tambah & hapus task) + komentar TODO
+    ├── app.js             # state dan operasi task per kertas
+    ├── task-row.js        # baris task, editor, dan urutan drag
+    ├── workspace.js       # grup, kertas, aset, dan kamera papan
+    ├── board-storage.js   # validasi, migrasi, dan penyimpanan data
+    ├── board-calendar.js  # tampilan dan navigasi kalender
+    ├── calendar-motion.js # transisi konten kalender
+    ├── panels.js          # Mode fokus
+    ├── dropdowns.js       # pilihan grup bertema
+    ├── paper-drag.js      # gerak kertas dan aset
+    └── pwa.js             # status offline dan instalasi
 ```
 
 Fondasi tampilan bulletin board memakai papan cork dan card kertas sementara.
@@ -118,14 +129,9 @@ dihubungkan lewat [`creative-assets.css`](./src/css/creative-assets.css).
 Lihat [panduan pemasangan aset](./src/assets/board/README.md) untuk tekstur,
 perekat, dekorasi, dan pengaturan ukurannya.
 
-Fitur yang sudah berfungsi pada starter:
-- Menambahkan task baru melalui form.
-- Menampilkan daftar task.
-- Menghapus task.
-
-Komentar `// TODO (Fitur #...)` pada ketiga berkas di atas menandai titik-titik
-yang perlu dilengkapi. Terdapat 6 titik fitur, sebagaimana dijelaskan pada
-bagian 6.
+Script dimuat berurutan dari `index.html`; helper dimuat sebelum pengendali
+yang memakainya. Setelah menambah atau mengubah script, perbarui daftar
+`APP_SHELL` dan versi `CACHE` pada service worker agar PWA tetap bisa dibuka offline.
 
 ---
 
