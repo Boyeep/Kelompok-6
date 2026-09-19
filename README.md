@@ -82,17 +82,6 @@ kertas, task, dan asetnya. Jika grup terakhir dihapus, tersedia grup kosong baru
 Dropdown kalender dan pilihan grup memakai warna tema, transisi halus, serta
 navigasi keyboard (panah, Home/End, Enter, Tab, dan Escape), termasuk saat offline.
 
-Pengujian browser dijalankan dengan Node.js 24 dan Chrome/Chromium:
-
-```sh
-node tests/workspace.test.cjs
-```
-
-Pengujian menjalankan server lokal sementara dan profil browser terpisah,
-memeriksa migrasi, animasi, grup/card, drag pada zoom, kalender, mobile, serta
-reload dan edit offline. Gunakan variabel `BROWSER_BINARY` bila lokasi browser
-berbeda. Screenshot hasil uji tersimpan di folder temporary yang dicetak.
-
 Saat merilis perubahan UI atau aset, naikkan versi `CACHE` di
 `src/service-worker.js` agar seluruh berkas aplikasi memakai versi yang sama.
 Tambahkan aset kreatif final ke `APP_SHELL` agar tersedia offline sebelum aset
