@@ -46,7 +46,10 @@ svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width:
 .board-world .board-decoration--bottom-left { top: calc(50% + 650px); left: calc(50% + 64px); bottom: auto; }
 .board-world .board-decoration--bottom-right { top: calc(50% + 660px); left: calc(50% + 950px); right: auto; bottom: auto; }
 .board-world .board-scene__texture { background-color: var(--bg); }
-#card-layer, #asset-layer { position: static; }
+/* Keep stickers above papers while preserving the stacking order within each layer. */
+#card-layer, #asset-layer { position: relative; width: 0; height: 0; }
+#card-layer { z-index: 0; }
+#asset-layer { z-index: 1; }
 .board-theme .paper { position: absolute; left: 0; top: 0; width: 520px; max-width: none; margin: 0; padding: 38px 28px 24px; cursor: default; transform-origin: 50% 0; touch-action: pan-y; }
 .board-theme .paper-drag-handle { margin: -38px -28px 14px; padding: 38px 40px 8px; }
 .paper-drag-handle:focus-visible { outline-offset: -4px; }

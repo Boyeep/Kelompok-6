@@ -1,5 +1,5 @@
 // Bump this version whenever the app shell or bundled creative assets change.
-const CACHE = "my-todo-board-shell-v14";
+const CACHE = "my-todo-board-shell-v15";
 const APP_SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./css/style.css", "./css/board-theme.css", "./css/interactions.css",
