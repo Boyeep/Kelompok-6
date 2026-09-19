@@ -1,0 +1,22 @@
+/* Replace `none` with url("../assets/board/filename.webp") when artwork is ready.
+   Paths are relative to this stylesheet. Empty slots make no network requests. */
+:root {
+  --board-texture-image: none;
+  --board-texture-size: 320px 320px;
+  --board-texture-repeat: repeat;
+
+  --paper-texture-image: none;
+  --paper-texture-size: 320px 320px;
+  --paper-texture-repeat: repeat;
+
+  --paper-fastener-image: none;
+  --paper-fastener-width: 96px;
+  --paper-fastener-height: 32px;
+  --paper-fastener-color: rgb(234 219 173 / 85%);
+  --paper-fastener-border: rgb(168 137 78 / 20%);
+
+  --board-top-left-image: none;
+  --board-top-right-image: none;
+  --board-bottom-left-image: none;
+  --board-bottom-right-image: none;
+}

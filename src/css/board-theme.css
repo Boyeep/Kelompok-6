@@ -1,0 +1,347 @@
+/* Bulletin board foundation. Creative image hooks live in creative-assets.css. */
+.board-theme {
+  --bg: #bd966f;
+  --card-bg: #fffdf5;
+  --text: #293b30;
+  --input-text: #000000;
+  --text-muted: #6d6558;
+  --border: #e1d9c9;
+  --input-border: #beb5a5;
+  --accent: #3c5446;
+  --accent-hover: #293b30;
+  --accent-soft: #e7ece2;
+  --danger: #b64032;
+  --danger-hover: #872c23;
+  --board-control-bg: #fffdf5;
+  --board-control-text: #293b30;
+  --board-texture-opacity: 0.65;
+  --paper-shadow: 0 20px 50px rgb(55 35 17 / 20%), 0 3px 8px rgb(55 35 17 / 12%);
+  --paper-lift-shadow: 0 30px 70px rgb(55 35 17 / 28%), 0 8px 18px rgb(55 35 17 / 18%);
+
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 88px 24px;
+}
+
+/* The board dims at night; the paper and its ink keep their light palette. */
+body.board-theme.dark {
+  --bg: #413a32;
+  --card-bg: #fffdf5;
+  --text: #293b30;
+  --input-text: #000000;
+  --text-muted: #6d6558;
+  --border: #e1d9c9;
+  --input-border: #beb5a5;
+  --accent: #3c5446;
+  --accent-hover: #293b30;
+  --accent-soft: #e7ece2;
+  --danger: #b64032;
+  --danger-hover: #872c23;
+  --board-control-bg: #302b25;
+  --board-control-text: #fffdf5;
+  --board-texture-opacity: 0.28;
+  --paper-shadow: 0 20px 50px rgb(0 0 0 / 35%), 0 3px 8px rgb(0 0 0 / 20%);
+  --paper-lift-shadow: 0 30px 70px rgb(0 0 0 / 45%), 0 8px 18px rgb(0 0 0 / 28%);
+}
+
+.board-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  box-shadow: inset 0 0 100px rgb(55 35 17 / 12%);
+}
+
+.board-scene__texture {
+  position: absolute;
+  inset: 0;
+  background-image:
+    var(--board-texture-image),
+    radial-gradient(rgb(62 39 17 / 16%) 0.7px, transparent 0.9px),
+    radial-gradient(rgb(255 247 218 / 26%) 0.8px, transparent 1px);
+  background-size: var(--board-texture-size), 7px 9px, 13px 11px;
+  background-repeat: var(--board-texture-repeat), repeat, repeat;
+  background-position: center, 0 0, 3px 4px;
+  opacity: var(--board-texture-opacity);
+  transition: var(--theme-transition), opacity var(--theme-transition-duration) ease-in-out;
+}
+
+.board-decoration {
+  position: absolute;
+  width: var(--decoration-width, clamp(110px, 15vw, 220px));
+  aspect-ratio: var(--decoration-aspect-ratio, 1);
+  background-image: var(--decoration-image);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: rotate(var(--decoration-rotation, 0deg));
+}
+
+.board-decoration--top-left {
+  --decoration-image: var(--board-top-left-image);
+  --decoration-rotation: -8deg;
+  top: 12%;
+  left: 4%;
+}
+
+.board-decoration--top-right {
+  --decoration-image: var(--board-top-right-image);
+  --decoration-rotation: 7deg;
+  top: 14%;
+  right: 4%;
+}
+
+.board-decoration--bottom-left {
+  --decoration-image: var(--board-bottom-left-image);
+  --decoration-rotation: 5deg;
+  bottom: 10%;
+  left: 7%;
+}
+
+.board-decoration--bottom-right {
+  --decoration-image: var(--board-bottom-right-image);
+  --decoration-rotation: -6deg;
+  bottom: 9%;
+  right: 6%;
+}
+
+.board-theme .paper {
+  position: relative;
+  z-index: 1;
+  color-scheme: light;
+  max-width: 560px;
+  padding: 44px 32px 28px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background-image: var(--paper-texture-image);
+  background-size: var(--paper-texture-size);
+  background-repeat: var(--paper-texture-repeat);
+  box-shadow: var(--paper-shadow);
+  --paper-lift-scale: 1.025;
+  translate: var(--paper-x, 0px) var(--paper-y, 0px);
+  scale: 1;
+  transform-origin: 50% 0;
+  transition:
+    var(--theme-transition),
+    box-shadow var(--theme-transition-duration) ease-in-out,
+    scale var(--button-motion-duration) ease-out;
+}
+
+.board-theme .paper.is-lifted {
+  scale: var(--paper-lift-scale);
+  box-shadow: var(--paper-lift-shadow);
+}
+
+.paper-drag-handle {
+  position: relative;
+  margin: -44px -32px 24px;
+  padding: 44px 32px 0;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.board-theme .paper-drag-handle h1 {
+  margin: 0;
+}
+
+.paper-drag-handle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -8px;
+}
+
+.is-paper-dragging,
+.is-paper-dragging * {
+  cursor: grabbing !important;
+  user-select: none;
+}
+
+.paper-fastener {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  width: var(--paper-fastener-width);
+  height: var(--paper-fastener-height);
+  transform: translateX(-50%) rotate(-4deg);
+  background-color: var(--paper-fastener-color);
+  background-image: var(--paper-fastener-image);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 1px solid var(--paper-fastener-border);
+  pointer-events: auto;
+}
+
+.board-theme h1 {
+  margin-bottom: 24px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.7rem, 4vw, 2rem);
+  letter-spacing: -0.035em;
+}
+
+.board-theme .task-form input,
+.board-theme .task-form button,
+.board-theme .filter-btn,
+.board-theme #clear-completed,
+.board-theme .edit-input {
+  border-radius: 4px;
+}
+
+.board-theme .task-form input {
+  background-color: rgb(255 255 255 / 40%);
+  font-family: inherit;
+}
+
+.board-theme .task-form button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.board-theme .filter-btn {
+  min-height: 44px;
+  background-color: transparent;
+}
+
+.board-theme .filter-btn:hover {
+  background-color: var(--accent-soft);
+}
+
+.board-theme .filter-btn.active {
+  background-color: var(--accent);
+}
+
+.board-theme .filter-btn.active:hover {
+  background-color: var(--accent-hover);
+}
+
+.board-theme .task-item {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 32px 32px;
+  gap: 4px 8px;
+  padding: 8px 0;
+  border: none;
+  border-radius: 0;
+  line-height: 1.4;
+}
+
+.board-theme .task-checkbox {
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+}
+
+.board-theme .task-text,
+.board-theme .edit-input {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.board-theme .task-due-date {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.board-theme .task-item .edit-btn,
+.board-theme .task-item .delete-btn {
+  grid-row: 1;
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+}
+
+.board-theme .task-item .edit-btn {
+  grid-column: 3;
+}
+
+.board-theme .task-item .delete-btn {
+  grid-column: 4;
+}
+
+.board-theme .footer {
+  border-top: none;
+  margin-top: 20px;
+  padding-top: 16px;
+}
+
+.board-theme #clear-completed {
+  min-height: 44px;
+  background-color: transparent;
+}
+
+.board-theme #clear-completed:hover {
+  background-color: var(--accent-soft);
+}
+
+.board-theme .theme-toggle {
+  position: fixed;
+  z-index: 2;
+  top: 20px;
+  right: 20px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 15%);
+  border-radius: 50%;
+  background-color: var(--board-control-bg);
+  color: var(--board-control-text);
+  box-shadow: 0 2px 8px rgb(55 35 17 / 12%);
+}
+
+.board-theme .theme-toggle:hover {
+  background-color: var(--board-control-bg);
+  opacity: 0.9;
+}
+
+.board-theme .theme-toggle .button-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.board-theme button:focus-visible,
+.board-theme input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.board-theme .theme-toggle:focus-visible {
+  outline-color: var(--board-control-text);
+}
+
+@media (max-width: 900px) {
+  .board-decoration {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .board-theme {
+    padding: 88px 16px;
+  }
+
+  .board-theme .paper {
+    --paper-lift-scale: 1.015;
+    padding: 36px 20px 24px;
+  }
+
+  .paper-drag-handle {
+    margin: -36px -20px 24px;
+    padding: 36px 20px 0;
+  }
+
+  .board-theme .task-form input[type="text"] {
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-theme .paper {
+    --paper-lift-scale: 1;
+  }
+}

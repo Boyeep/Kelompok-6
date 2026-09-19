@@ -2,6 +2,7 @@
   --bg: #f2f4f7;
   --card-bg: #ffffff;
   --text: #4338ca;
+  --input-text: #000000;
   --text-muted: #6b7280;
   --border: #e5e7eb;
   --input-border: #d1d5db;
@@ -10,6 +11,11 @@
   --accent-soft: #eef2ff;
   --danger: #ef4444;
   --danger-hover: #b91c1c;
+  --theme-transition-duration: 0.3s;
+  --theme-transition:
+    background-color var(--theme-transition-duration) ease-in-out,
+    color var(--theme-transition-duration) ease-in-out,
+    border-color var(--theme-transition-duration) ease-in-out;
 }
 
 body.dark {
@@ -17,6 +23,7 @@ body.dark {
   --bg: #172136;
   --card-bg: #111827;
   --text: #e5e7eb;
+  --input-text: #e5e7eb;
   --muted: #6b7280;
   --text-muted: #9ca3af;
   --border: #2a323e;
@@ -32,12 +39,37 @@ body.dark {
   box-sizing: border-box;
 }
 
+body,
+.app,
+.task-form input,
+.task-form button,
+.filter-btn,
+.task-checkbox,
+.task-item.completed .task-text,
+.task-item .task-due-date,
+.task-item .edit-input,
+.task-item .edit-btn,
+.task-item .delete-btn,
+.empty-state,
+.footer,
+#task-counter,
+#clear-completed,
+.theme-toggle {
+  transition: var(--theme-transition);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-transition-duration: 0s;
+  }
+}
+
 body {
   margin: 0;
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   padding: 60px 16px;
   background: var(--bg);
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -48,6 +80,7 @@ body {
   width: 100%;
   max-width: 480px;
   background: var(--card-bg);
+  color: var(--text);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -74,7 +107,7 @@ h1 {
   border-radius: 8px;
   font-size: 1rem;
   background: var(--card-bg);
-  color: var(--text);
+  color: var(--input-text);
 }
 
 .task-form input[type="date"] {
@@ -142,6 +175,10 @@ h1 {
   gap: 8px;
 }
 
+.task-list.resizing {
+  overflow: clip;
+}
+
 .task-item {
   display: flex;
   align-items: center;
@@ -151,8 +188,9 @@ h1 {
   border-radius: 6px;
 
   transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+    var(--theme-transition),
+    opacity var(--task-motion-duration, 0.3s) ease,
+    transform var(--task-motion-duration, 0.3s) ease;
 }
 
 .task-item.adding {
@@ -161,6 +199,7 @@ h1 {
 }
 
 .task-item.removing {
+  pointer-events: none;
   opacity: 0;
   transform: translateX(30px);
 }
@@ -224,15 +263,25 @@ h1 {
   border-color: var(--accent);
 }
 
-.task-checkbox:checked::after {
-  content: "✓";
+.task-checkbox::after {
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  color: #fff;
-  font-size: 12px;
-  font-weight: bold;
+  width: 8px;
+  height: 5px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  opacity: 0;
+  transform: translate(-50%, -65%) rotate(-45deg) scale(0.4);
+  transition:
+    opacity var(--button-motion-duration, 0.18s) ease,
+    transform var(--button-motion-duration, 0.18s) ease;
+}
+
+.task-checkbox:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -65%) rotate(-45deg) scale(1);
 }
 
 /*
@@ -288,7 +337,7 @@ h1 {
   font-size: 1rem;
   font-family: inherit;
   background: var(--card-bg);
-  color: var(--text);
+  color: var(--input-text);
 }
 
 .task-text.edit-saved {
@@ -324,7 +373,7 @@ h1 {
 .task-item {
   border: none;
   background: transparent;
-  color: var(--text);
+  color: var(--input-text);
   font-size: 0.9rem;
   cursor: pointer;
   line-height: 1;
