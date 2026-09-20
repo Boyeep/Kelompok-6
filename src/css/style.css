@@ -1,5 +1,67 @@
+:root {
+  --bg: #f2f4f7;
+  --card-bg: #ffffff;
+  --text: #4338ca;
+  --input-text: #000000;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+  --input-border: #d1d5db;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eef2ff;
+  --danger: #ef4444;
+  --danger-hover: #b91c1c;
+  --theme-transition-duration: 0.3s;
+  --theme-transition:
+    background-color var(--theme-transition-duration) ease-in-out,
+    color var(--theme-transition-duration) ease-in-out,
+    border-color var(--theme-transition-duration) ease-in-out;
+}
+
+body.dark {
+  color-scheme: dark;
+  --bg: #172136;
+  --card-bg: #111827;
+  --text: #e5e7eb;
+  --input-text: #e5e7eb;
+  --muted: #6b7280;
+  --text-muted: #9ca3af;
+  --border: #2a323e;
+  --input-border: #4b5563;
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-soft: #4338ca;
+  --danger: #f87171;
+  --danger-hover: #ef4444;
+}
+
 * {
   box-sizing: border-box;
+}
+
+body,
+.app,
+.task-form input,
+.task-form button,
+.filter-btn,
+.task-checkbox,
+.task-item.completed .task-text,
+.task-item .task-due-date,
+.task-item .edit-input,
+.task-item .edit-btn,
+.task-item .delete-btn,
+.empty-state,
+.footer,
+#task-counter,
+#clear-completed,
+.theme-toggle {
+  transition: var(--theme-transition);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --theme-transition-duration: 0s;
+  }
 }
 
 body {
@@ -7,17 +69,18 @@ body {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  padding: 40px 16px;
-  background: #f2f4f7;
+  align-items: center;
+  padding: 60px 16px;
+  background: var(--bg);
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .app {
   width: 100%;
   max-width: 480px;
-  background: #ffffff;
+  background: var(--card-bg);
+  color: var(--text);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -31,37 +94,77 @@ h1 {
 
 .task-form {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
 }
 
 .task-form input {
-  flex: 1;
+  flex: 1 1 160px;
+  min-width: 0;
   padding: 10px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--input-border);
   border-radius: 8px;
   font-size: 1rem;
+  background: var(--card-bg);
+  color: var(--input-text);
+}
+
+.task-form input[type="date"] {
+  flex: 1 1 140px;
 }
 
 .task-form button {
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  background: #4f46e5;
+  background: var(--accent);
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
 }
 
 .task-form button:hover {
-  background: #4338ca;
+  background: var(--accent-hover);
 }
 
-/*
-  TODO (Fitur #3 - Filter Task):
-  Tambahkan style untuk .filters dan .filter-btn di sini.
-  Tandai tombol filter yang sedang aktif, misalnya dengan class ".active".
-*/
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  background: var(--accent-soft);
+}
+
+.filter-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.filter-btn.active:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+}
+
+.filter-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 
 .task-list {
   list-style: none;
@@ -72,13 +175,33 @@ h1 {
   gap: 8px;
 }
 
+.task-list.resizing {
+  overflow: clip;
+}
+
 .task-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  gap: 8px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+
+  transition:
+    var(--theme-transition),
+    opacity var(--task-motion-duration, 0.3s) ease,
+    transform var(--task-motion-duration, 0.3s) ease;
+}
+
+.task-item.adding {
+  opacity: 0;
+  transform: translateY(-15px);
+}
+
+.task-item.removing {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(30px);
 }
 
 .task-item span {
@@ -86,22 +209,28 @@ h1 {
   word-break: break-word;
 }
 
+.task-item .task-due-date {
+  flex: 0 0 auto;
+  font-size: 0.8rem;
+  color: var(--text-muted, #6b7280);
+}
+
 .task-item .delete-btn {
   border: none;
   background: transparent;
-  color: #ef4444;
+  color: var(--danger);
   font-size: 1.1rem;
   cursor: pointer;
   line-height: 1;
 }
 
 .task-item .delete-btn:hover {
-  color: #b91c1c;
+  color: var(--danger-hover);
 }
 
 .empty-state {
   text-align: center;
-  color: #9ca3af;
+  color: var(--text-muted);
   padding: 16px 0;
   font-size: 0.9rem;
 }
@@ -112,6 +241,48 @@ h1 {
   pada .task-item yang membuat teksnya dicoret (text-decoration: line-through)
   dan warnanya lebih pudar.
 */
+.task-item.completed .task-text {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.task-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background: var(--card-bg);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.task-checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.task-checkbox::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 5px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  opacity: 0;
+  transform: translate(-50%, -65%) rotate(-45deg) scale(0.4);
+  transition:
+    opacity var(--button-motion-duration, 0.18s) ease,
+    transform var(--button-motion-duration, 0.18s) ease;
+}
+
+.task-checkbox:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -65%) rotate(-45deg) scale(1);
+}
 
 /*
   TODO (Fitur #2 - Edit Task):
@@ -119,8 +290,129 @@ h1 {
   menggantikan <span> saat task sedang diedit.
 */
 
-/*
-  TODO (Fitur #5 & #6 - Counter & Clear Completed):
-  Tambahkan style untuk .footer yang berisi counter task dan tombol
-  "Hapus yang Selesai".
-*/
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+#task-counter {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+#clear-completed {
+  margin-left: auto;
+  padding: 6px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+#clear-completed:hover {
+  background: var(--accent-soft);
+}
+
+#clear-completed:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.task-item .edit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 6px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: var(--card-bg);
+  color: var(--input-text);
+}
+
+.task-text.edit-saved {
+  animation: editSaved 0.3s ease;
+}
+
+@keyframes editSaved {
+  0% {
+    opacity: 0;
+    scale: 0.85;
+  }
+
+  60% {
+    opacity: 1;
+    scale: 1.05;
+  }
+
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.edit-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-item {
+  border: none;
+  background: transparent;
+  color: var(--input-text);
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-item .edit-btn {
+  border: none;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.task-item .edit-btn:hover {
+  color: var(--text-muted);
+}
+
+.theme-toggle {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  background: var(--accent-hover);
+}
+
+.button-icon {
+  display: inline-block;
+  min-width: 1em;
+  text-align: center;
+  font-size: 1.1em;
+  line-height: 1;
+}

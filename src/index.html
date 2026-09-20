@@ -3,53 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>To Do List</title>
+  <meta name="theme-color" content="#3c5446" />
+  <meta name="description" content="Papan pribadi untuk task, grup, dan kalender. Tetap bisa digunakan offline." />
+  <title>My To Do Board</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/board-theme.css" />
+  <link rel="stylesheet" href="css/interactions.css" />
+  <link rel="stylesheet" href="css/creative-assets.css" />
+  <link rel="stylesheet" href="css/workspace.css" />
+  <link rel="stylesheet" href="css/panels.css" />
 </head>
-<body>
-  <main class="app">
-    <h1>📋 My To Do List</h1>
-
-    <form id="task-form" class="task-form">
-      <input
-        type="text"
-        id="task-input"
-        placeholder="Mau ngapain hari ini?"
-        autocomplete="off"
-      />
-      <button type="submit">Tambah</button>
-    </form>
-
-    <!--
-      TODO (Fitur #3 - Filter Task):
-      Tambahkan 3 tombol filter di sini: "Semua", "Aktif", "Selesai".
-      Lihat README.md bagian "Fitur yang Harus Dibuat" nomor 3 untuk hint lengkap.
-
-      Contoh struktur:
-      <div class="filters" id="filters">
-        <button class="filter-btn active" data-filter="all">Semua</button>
-        <button class="filter-btn" data-filter="active">Aktif</button>
-        <button class="filter-btn" data-filter="completed">Selesai</button>
-      </div>
-    -->
-
-    <ul id="task-list" class="task-list">
-      <!-- Task dirender otomatis oleh js/app.js, jangan ditulis manual di sini -->
-    </ul>
-
-    <!--
-      TODO (Fitur #5 - Counter & Fitur #6 - Clear Completed):
-      Tambahkan info jumlah task tersisa dan tombol untuk menghapus
-      semua task yang sudah selesai. Lihat README.md nomor 5 dan 6.
-
-      Contoh struktur:
-      <div class="footer" id="footer">
-        <span id="task-counter">0 task tersisa</span>
-        <button id="clear-completed">Hapus yang Selesai</button>
-      </div>
-    -->
+<body class="board-theme sidebar-open toolbar-open">
+  <a class="skip-link" href="#board-viewport">Ke papan</a>
+  <button id="focus-mode" class="focus-mode icon-control" type="button" aria-label="Mode fokus" aria-pressed="false" aria-controls="sidebar workspace-toolbar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></svg></button>
+  <aside id="sidebar" class="sidebar" aria-label="Grup to-do">
+    <div class="sidebar-brand"><span class="brand-mark" aria-hidden="true">M</span><div><strong>My To Do Board</strong><small>Ruang untuk rencanamu</small></div></div>
+    <div class="sidebar-label">GRUP SAYA</div>
+    <nav id="group-list" aria-label="Pilih grup"></nav>
+    <button id="add-group" class="add-group" type="button"><span aria-hidden="true">+</span> Tambah grup</button>
+    <div class="sidebar-bottom"><span id="board-summary"></span><small>Semua perubahan tersimpan di perangkat ini.</small></div>
+  </aside>
+  <button id="sidebar-backdrop" class="sidebar-backdrop" type="button" tabindex="-1" aria-label="Tutup panel dan kembali ke papan" hidden></button>
+  <header id="workspace-toolbar" class="workspace-toolbar">
+    <div class="current-group"><strong id="current-group-name"></strong></div>
+    <button id="rename-group" class="icon-control" type="button" aria-label="Ubah nama grup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16 12-12 4 4-12 12H4zM14 6l4 4"/></svg></button>
+    <div class="install-section"><span id="connection-status" role="status">Online</span><button id="install-button" type="button">Install app</button></div>
+    <button type="button" id="theme-toggle" class="icon-control" aria-label="Aktifkan mode gelap"></button>
+  </header>
+  <main id="board-viewport" class="board-viewport" tabindex="0" aria-label="Papan to-do. Tarik area kosong atau gunakan tombol panah untuk menggeser papan.">
+    <div id="board-world" class="board-world">
+      <div class="board-scene" aria-hidden="true"><div class="board-scene__texture"></div><div class="board-decoration board-decoration--top-left"></div><div class="board-decoration board-decoration--top-right"></div><div class="board-decoration board-decoration--bottom-left"></div><div class="board-decoration board-decoration--bottom-right"></div></div>
+      <div id="card-layer"></div><div id="asset-layer"></div>
+    </div>
+    <div id="empty-board" class="empty-board" hidden><h1>Papan kosong, ide baru.</h1><p>Mulai dengan satu to-do list untuk grup ini.</p><button id="empty-create" type="button">+ Buat to-do list</button></div>
   </main>
-
+  <div class="zoom-control" role="group" aria-label="Luas tampilan papan">
+    <button id="zoom-out" class="icon-control" type="button" aria-label="Perluas tampilan papan; card tampak lebih kecil" title="Perluas papan">+</button>
+    <input id="board-zoom" type="range" min="60" max="200" value="100" step="5" orient="vertical" aria-label="Luas tampilan papan; geser ke atas untuk memperluas" />
+    <button id="zoom-in" class="icon-control" type="button" aria-label="Persempit tampilan papan; card tampak lebih besar" title="Persempit papan">−</button>
+    <output id="zoom-label" for="board-zoom">100%</output>
+    <button id="reset-view" class="icon-control" type="button" aria-label="Kembali ke card pertama" title="Kembali ke kertas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4M9 12h6m-3-3v6"/></svg></button>
+  </div>
+  <div class="board-actions">
+    <button id="open-calendar" class="floating-button calendar-button" type="button" aria-label="Buka kalender task" title="Kalender"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 11h16m-12 4h2m4 0h2"/></svg></button>
+    <div class="create-menu-wrap"><div id="create-menu" class="create-menu" hidden><button id="create-card" type="button"><strong>+ To-do list</strong><small>Kertas baru untuk task-mu</small></button><button id="open-papers" type="button"><strong>Ganti kertas</strong><small>Pilih tampilan dari aset kertas</small></button><button id="open-assets" type="button"><strong>+ Aset papan</strong><small>Tempel hiasan yang tersedia</small></button></div><button id="toggle-create" class="floating-button create-button" type="button" aria-label="Tambahkan ke papan" aria-expanded="false" aria-controls="create-menu">+</button></div>
+  </div>
+  <div id="save-status" class="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="name-dialog" class="board-dialog" aria-labelledby="name-dialog-title"><form id="name-form"><div class="dialog-heading"><h2 id="name-dialog-title">Tambah grup</h2><button class="dialog-close icon-control" type="button" aria-label="Tutup">×</button></div><label for="name-input">Nama</label><input id="name-input" type="text" maxlength="80" required autocomplete="off" /><div class="dialog-actions"><button id="delete-group" class="danger-button" type="button" hidden>Hapus grup</button><button class="dialog-close secondary-button" type="button">Batal</button><button type="submit" class="primary-button">Simpan</button></div></form></dialog>
+  <dialog id="card-dialog" class="board-dialog" aria-labelledby="card-dialog-title"><form id="card-settings-form"><div class="dialog-heading"><h2 id="card-dialog-title">Atur kertas</h2><button class="dialog-close icon-control" type="button" aria-label="Tutup">×</button></div><label for="card-title-input">Judul kertas</label><input id="card-title-input" type="text" maxlength="80" required /><label for="card-group-input">Grup</label><select id="card-group-input"></select><div class="dialog-actions"><button id="delete-card" type="button" class="danger-button">Hapus kertas</button><button type="submit" class="primary-button">Simpan</button></div><p id="delete-card-warning" hidden>Klik “Hapus kertas” sekali lagi untuk menghapus kertas beserta task-nya.</p></form></dialog>
+  <dialog id="delete-group-dialog" class="board-dialog" aria-labelledby="delete-group-title" aria-describedby="delete-group-message"><div class="dialog-heading"><h2 id="delete-group-title">Hapus grup</h2><button class="dialog-close icon-control" type="button" aria-label="Tutup">×</button></div><p id="delete-group-message"></p><p id="delete-group-last-note" class="calendar-note" hidden>Ini grup terakhir. Setelah dihapus, satu grup kosong baru akan disiapkan.</p><div class="dialog-actions"><button class="dialog-close secondary-button" type="button" autofocus>Batal</button><button id="confirm-delete-group" class="delete-group-confirm" type="button">Hapus grup</button></div></dialog>
+  <dialog id="paper-dialog" class="board-dialog artwork-dialog" aria-labelledby="paper-dialog-title"><div class="dialog-heading"><h2 id="paper-dialog-title">Ganti kertas</h2><button class="dialog-close icon-control" type="button" aria-label="Tutup">×</button></div><label for="paper-target">To-do list</label><select id="paper-target"></select><p>Pilih tampilan kertas untuk to-do list ini.</p><div id="paper-catalog" class="paper-catalog"></div></dialog>
+  <dialog id="asset-dialog" class="board-dialog artwork-dialog" aria-labelledby="asset-dialog-title"><div class="dialog-heading"><h2 id="asset-dialog-title">Tempel aset papan</h2><button class="dialog-close icon-control" type="button" aria-label="Tutup">×</button></div><p>Tarik aset untuk memindahkan; pilih tombol silang untuk melepas.</p><div id="asset-catalog" class="asset-catalog"></div></dialog>
+  <dialog id="calendar-dialog" class="board-dialog calendar-dialog" aria-labelledby="calendar-title"><div class="dialog-heading"><h2 id="calendar-title">Kalender task</h2><button class="dialog-close icon-control" type="button" aria-label="Tutup">×</button></div><label for="calendar-scope">Tampilkan task dari</label><select id="calendar-scope"><option value="current">Grup ini</option><option value="all">Semua grup</option></select><div class="calendar-toolbar"><button id="previous-month" class="icon-control" type="button" aria-label="Bulan sebelumnya">‹</button><span class="calendar-month-title-stage"><strong id="calendar-month" aria-live="polite"></strong></span><button id="next-month" class="icon-control" type="button" aria-label="Bulan berikutnya">›</button><button id="calendar-today" class="secondary-button" type="button">Hari ini</button></div><div class="calendar-weekdays" aria-hidden="true"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div><div class="calendar-stage"><div id="calendar-grid" class="calendar-grid" role="group" aria-label="Pilih tanggal"></div></div><div class="calendar-stage"><div id="calendar-day-view" class="calendar-day-view"><h3 id="calendar-day-title"></h3><ul id="calendar-tasks" class="calendar-tasks"></ul><p id="calendar-undated" class="calendar-note"></p></div></div></dialog>
+  <dialog id="install-dialog" class="board-dialog" aria-labelledby="install-title"><div class="dialog-heading"><h2 id="install-title">Install My To Do Board</h2><button class="dialog-close icon-control" type="button" aria-label="Tutup">×</button></div><p id="install-instructions"></p></dialog>
+  <template id="paper-template">
+    <article class="app paper" aria-label="To-do list">
+      <header class="paper-drag-handle" tabindex="0" role="group" aria-label="Geser kertas"><div class="paper-fastener" aria-hidden="true"></div><div class="paper-heading-line"><h2 class="paper-title">My To Do List</h2><button class="paper-options" type="button" aria-label="Atur kertas" title="Atur kertas"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></div><span class="sr-only">Tarik judul untuk menggeser. Gunakan panah, Shift untuk langkah besar, Home untuk menampilkan kertas di tengah, dan Escape untuk membatalkan.</span></header>
+      <form class="task-form"><input type="text" class="task-input" aria-label="Nama task" placeholder="Mau ngapain hari ini?" autocomplete="off" required /><input type="date" class="due-date-input" aria-label="Tanggal jatuh tempo" /><button type="submit" aria-label="Tambah task" title="Tambah task">+</button></form>
+      <div class="filters" role="group" aria-label="Filter task"><button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">Semua</button><button type="button" class="filter-btn" data-filter="active" aria-pressed="false">Aktif</button><button type="button" class="filter-btn" data-filter="completed" aria-pressed="false">Selesai</button></div>
+      <ul class="task-list" tabindex="0" aria-label="Daftar task; gulir untuk melihat task berikutnya"></ul>
+      <div class="footer"><span class="task-counter" role="status" aria-live="polite" aria-atomic="true"><span class="counter-visual" aria-hidden="true"><span class="counter-number"><span class="counter-digit">0</span></span> task tersisa</span><span class="counter-announcement sr-only">0 task tersisa</span></span><button type="button" class="clear-completed">Hapus yang Selesai</button></div>
+    </article>
+  </template>
+  <script src="js/asset-catalog.js"></script>
+  <script src="js/task-row.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/paper-drag.js"></script>
+  <script src="js/dropdowns.js"></script>
+  <script src="js/panels.js"></script>
+  <script src="js/board-storage.js"></script>
+  <script src="js/calendar-motion.js"></script>
+  <script src="js/board-calendar.js"></script>
+  <script src="js/workspace.js"></script>
+  <script src="js/pwa.js"></script>
 </body>
 </html>
