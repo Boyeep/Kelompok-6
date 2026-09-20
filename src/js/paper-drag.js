@@ -43,6 +43,7 @@ function bindBoardDrag(element, handle, item, board) {
   // during a transform. Pointerup, pointercancel, Escape, and blur finish it.
   handle.addEventListener("dragstart", (event) => event.preventDefault(), options);
   handle.addEventListener("keydown", (event) => {
+    if (event.target !== handle) return;
     if (event.key === "Escape") { drop(true); return; }
     if (drag) return;
     if (event.key === "Home") { event.preventDefault(); board.stopNavigation?.(); board.focus(item); return; }

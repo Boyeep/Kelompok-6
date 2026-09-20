@@ -1,5 +1,5 @@
 // Keep board data validation and legacy migration separate from the UI.
-function createBoardStorage(assetCatalog, notify) {
+function createBoardStorage(assetCatalog, paperCatalog, notify) {
   const key = "my-todo-board-v1";
   const uid = () => globalThis.crypto?.randomUUID?.() || `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const finite = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
@@ -55,6 +55,7 @@ function createBoardStorage(assetCatalog, notify) {
       cards: validItems(saved.cards).map((card) => ({
         ...position(card),
         title: typeof card.title === "string" ? card.title : "My To Do List",
+        paperAssetId: paperCatalog.has(card.paperAssetId) ? card.paperAssetId : null,
         tasks: normalizeTasks(card.tasks),
       })),
       assets: validItems(saved.assets)
@@ -72,7 +73,7 @@ function createBoardStorage(assetCatalog, notify) {
       version: 1,
       activeGroupId: groupId,
       groups: [{ id: groupId, name: "Grup saya", camera: { x: 0, y: 0, zoom: 1 } }],
-      cards: [{ id: uid(), groupId, title: "My To Do List", x: 48, y: 56, z: 1, tasks: legacy }],
+      cards: [{ id: uid(), groupId, title: "My To Do List", paperAssetId: null, x: 48, y: 56, z: 1, tasks: legacy }],
       assets: [],
     };
   }

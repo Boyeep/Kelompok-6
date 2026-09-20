@@ -8,8 +8,10 @@
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const contentMotion = { duration: 240, easing: "cubic-bezier(.22, 1, .36, 1)" };
   const catalog = new Map(window.BOARD_ASSETS.map((asset) => [asset.id, asset]));
+  const paperCatalog = new Map(window.PAPER_ASSETS.map((paper) => [paper.id, paper]));
   const cards = new Map();
   const assets = new Map();
+  let lastActiveCardId = null;
   let toastTimer;
   function notify(message, persistent = false) {
     clearTimeout(toastTimer);
@@ -17,7 +19,7 @@
     $("#save-status").hidden = false;
     if (!persistent) toastTimer = setTimeout(() => { $("#save-status").hidden = true; }, 3400);
   }
-  const storage = createBoardStorage(catalog, notify);
+  const storage = createBoardStorage(catalog, paperCatalog, notify);
   const { uid, clamp } = storage;
   const { state, hadSavedBoard } = storage.load();
   let cameraAnimation = null;
@@ -110,6 +112,7 @@
     $("#board-zoom").setAttribute("aria-valuetext", `${extent}% luas tampilan papan`);
   }
   function focusItem(item, focusHandle = true, smooth = false) {
+    if (cards.has(item.id)) lastActiveCardId = item.id;
     const switchingGroup = item.groupId !== state.activeGroupId;
     const ghost = switchingGroup && smooth && !reduced.matches ? captureGroupView() : null;
     if (switchingGroup) selectGroup(item.groupId, false, false);
@@ -129,20 +132,40 @@
     save(); renderSidebar();
     if ($("#calendar-dialog").open) calendar.render();
   }
+  function applyPaperArtwork(card, element) {
+    const artwork = paperCatalog.get(card.paperAssetId);
+    element.classList.toggle("has-paper-artwork", Boolean(artwork));
+    if (artwork) {
+      element.dataset.paperId = artwork.id;
+      element.style.setProperty("--selected-paper-image", `url("${new URL(artwork.src, document.baseURI).href}")`);
+      element.style.setProperty("--paper-width-desktop", `${artwork.widthDesktop}px`);
+      element.style.setProperty("--paper-height-desktop", `${artwork.heightDesktop}px`);
+      element.style.setProperty("--paper-width-mobile", `${artwork.widthMobile}px`);
+      element.style.setProperty("--paper-height-mobile", `${artwork.heightMobile}px`);
+    } else {
+      delete element.dataset.paperId;
+      element.style.removeProperty("--selected-paper-image");
+      element.style.removeProperty("--paper-width-desktop");
+      element.style.removeProperty("--paper-height-desktop");
+      element.style.removeProperty("--paper-width-mobile");
+      element.style.removeProperty("--paper-height-mobile");
+    }
+  }
   function mountCard(card, entering = false) {
     const element = $("#paper-template").content.firstElementChild.cloneNode(true);
     element.dataset.cardId = card.id;
     element.querySelector(".paper-title").textContent = card.title;
     element.setAttribute("aria-label", card.title);
     element.style.zIndex = card.z;
+    applyPaperArtwork(card, element);
     cardLayer.append(element);
     cards.set(card.id, { element });
     const controller = createTodoController(element, card, change);
     const drag = bindBoardDrag(element, element.querySelector(".paper-drag-handle"), card, board);
     cards.set(card.id, { element, controller, drag });
     element.addEventListener("pointerenter", () => board.front(card, element));
-    element.addEventListener("pointerdown", () => board.front(card, element));
-    element.addEventListener("focusin", () => board.front(card, element));
+    element.addEventListener("pointerdown", () => { lastActiveCardId = card.id; board.front(card, element); });
+    element.addEventListener("focusin", () => { lastActiveCardId = card.id; board.front(card, element); });
     element.querySelector(".paper-options").addEventListener("click", () => openCardSettings(card));
     if (entering && !reduced.matches) {
       element.classList.add("is-entering");
@@ -244,6 +267,7 @@
     state.cards.forEach((card) => { cards.get(card.id).element.hidden = card.groupId !== state.activeGroupId; });
     state.assets.forEach((asset) => { assets.get(asset.id).element.hidden = asset.groupId !== state.activeGroupId; });
     $("#empty-board").hidden = state.cards.some((card) => card.groupId === state.activeGroupId);
+    $("#open-papers").disabled = !$("#empty-board").hidden;
   }
   function selectGroup(id, smooth = false, moveCamera = true) {
     if (!state.groups.some((entry) => entry.id === id)) return;
@@ -277,7 +301,7 @@
     const width = innerWidth <= 700 ? 340 : 520;
     // Reserve the full task viewport so a new card has room to grow.
     const position = spawnPosition(width, 600);
-    const card = { id: uid(), groupId: state.activeGroupId, title, ...position, z: ++stack, tasks: [] };
+    const card = { id: uid(), groupId: state.activeGroupId, title, paperAssetId: null, ...position, z: ++stack, tasks: [] };
     state.cards.push(card); mountCard(card, true); updateVisibility(); change(); focusItem(card, false);
     cards.get(card.id).element.querySelector(".task-input").focus({ preventScroll: true });
   }
@@ -393,6 +417,45 @@
   document.addEventListener("pointerdown", (event) => { if (!event.target.closest(".create-menu-wrap")) closeCreateMenu(); });
   document.addEventListener("keydown", (event) => { if (event.key === "Escape" && createMenuOpen) { closeCreateMenu(); $("#toggle-create").focus(); } });
   $("#open-assets").addEventListener("click", () => { closeCreateMenu(); $("#asset-dialog").showModal(); });
+  const paperTarget = $("#paper-target");
+  function renderPaperSelection() {
+    const selected = state.cards.find((card) => card.id === paperTarget.value)?.paperAssetId || null;
+    $("#paper-catalog").querySelectorAll(".paper-choice").forEach((button) => {
+      const active = button.dataset.paperId === (selected || "");
+      button.setAttribute("aria-pressed", String(active));
+    });
+  }
+  $("#open-papers").addEventListener("click", () => {
+    const groupCards = state.cards.filter((card) => card.groupId === state.activeGroupId);
+    if (!groupCards.length) return;
+    closeCreateMenu();
+    paperTarget.replaceChildren(...groupCards.map((card) => new Option(card.title, card.id)));
+    paperTarget.value = groupCards.some((card) => card.id === lastActiveCardId) ? lastActiveCardId : groupCards[0].id;
+    paperTarget.dispatchEvent(new Event("dropdown:sync"));
+    renderPaperSelection();
+    $("#paper-dialog").showModal();
+  });
+  paperTarget.addEventListener("change", renderPaperSelection);
+  [{ id: "", name: "Kertas standar" }, ...paperCatalog.values()].forEach((paper) => {
+    const button = document.createElement("button");
+    button.type = "button"; button.className = "paper-choice"; button.dataset.paperId = paper.id;
+    if (paper.src) {
+      const image = new Image(); image.src = paper.src; image.alt = ""; image.loading = "lazy";
+      button.append(image);
+    } else {
+      const preview = document.createElement("span"); preview.className = "paper-choice-default"; preview.setAttribute("aria-hidden", "true");
+      button.append(preview);
+    }
+    const label = document.createElement("span"); label.textContent = paper.name; button.append(label);
+    button.addEventListener("click", () => {
+      const card = state.cards.find((item) => item.id === paperTarget.value);
+      if (!card) return;
+      card.paperAssetId = paper.id || null;
+      applyPaperArtwork(card, cards.get(card.id).element);
+      change(); $("#paper-dialog").close(); focusItem(card, false);
+    });
+    $("#paper-catalog").append(button);
+  });
   catalog.forEach((artwork) => {
     const button = document.createElement("button"); button.className = "asset-choice";
     const image = new Image(); image.src = artwork.src; image.alt = ""; const label = document.createElement("span"); label.textContent = artwork.name;
