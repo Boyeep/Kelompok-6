@@ -1,24 +1,25 @@
 # Aset bulletin board
 
-Taruh aset final dari tim kreatif di folder ini. Fondasi sudah berjalan dengan
-warna papan, tekstur CSS sederhana, kertas krem, dan perekat CSS sementara.
-Slot dekorasi kosong sampai aset dihubungkan; tidak ada gambar yang gagal dimuat.
+Aset SVG dari tim kreatif sudah tersusun di [folder creative](creative/README.md).
+Pilihan **Ganti kertas** memakai empat SVG notepad `papers/` untuk tiap to-do list.
+Pilihan **Aset papan** menggabungkan semua aset dekoratif lain dengan tiga aset
+dasar sebelumnya. Pilihan kertas dan posisi hiasan tersimpan per grup.
 
 Tekstur, perekat, dan dekorasi latar dihubungkan melalui
 `../../css/creative-assets.css`. Aset yang bisa dipilih dan ditempel pengguna
 diatur di `../../js/asset-catalog.js`. Layout papan dasar ada di
 `../../css/board-theme.css`; layout banyak card ada di `../../css/workspace.css`.
 
-Katalog berisi aset SVG dasar daun, bintang, dan selotip sementara. Ganti file
-atau tambahkan entri ketika artwork final tersedia:
+Katalog masih mempertahankan ID daun, bintang, dan selotip lama agar papan
+yang tersimpan tetap bisa dibuka. Untuk menambah aset baru, beri ID unik:
 
 ```js
 { id: "sticker-flower", name: "Bunga", src: "assets/board/flower.webp", width: 130, height: 160 }
 ```
 
 Pertahankan `id` katalog karena penempatan yang tersimpan merujuk pada id itu.
-Gunakan URL lokal. Tambahkan file final ke `APP_SHELL` dan naikkan `CACHE` di
-`../../service-worker.js` supaya artwork tersedia pada pembukaan offline pertama.
+Gunakan URL lokal. Service worker mengambil URL dalam katalog untuk cache offline;
+naikkan `CACHE` di `../../service-worker.js` setiap katalog atau berkas aset berubah.
 Posisi aset tempel tersimpan per grup, bisa digeser, dan bisa dilepas.
 
 | Aset | Variabel CSS | Format yang cocok |
@@ -46,8 +47,9 @@ Contoh pemasangan setelah file tersedia:
 
 Gunakan `--board-texture-size` dan `--paper-texture-size` untuk mengatur skala
 tekstur. Untuk artwork penuh, ubah ukuran menjadi `100% 100%` dan repeat menjadi
-`no-repeat`; gambar akan mengikuti ukuran papan/kertas. Kertas mengikuti tinggi
-task, jadi gunakan tekstur seamless bila artwork tidak boleh meregang.
+`no-repeat`; gambar akan mengikuti ukuran papan/kertas. Kertas pilihan dari
+`papers/` ditampilkan sebagai gambar latar kartu berukuran tetap. Task yang
+melebihi area daftar digulir di dalam kertas tanpa mengubah ukuran aset.
 
 Ukuran perekat dapat diatur lewat `--paper-fastener-width` dan
 `--paper-fastener-height`. Set warna dan border perekat menjadi `transparent`
